@@ -6,6 +6,7 @@ import { applicationsRouter } from './modules/applications.routes';
 import { auditRouter } from './modules/audit.routes';
 import { authRouter } from './modules/auth.routes';
 import { challengesRouter } from './modules/challenges.routes';
+import { evaluationRouter } from './modules/evaluation.routes';
 import { metaRouter } from './modules/meta.routes';
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   app.use('/api/meta', metaRouter);
   app.use('/api/challenges', challengesRouter);
   app.use('/api/applications', applicationsRouter);
+  app.use('/api/applications', evaluationRouter);
   app.use('/api/audit', auditRouter);
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route not found')));

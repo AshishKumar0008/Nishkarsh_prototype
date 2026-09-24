@@ -68,3 +68,26 @@ export const eligibilityDecisionSchema = z
     path: ['note'],
   });
 export type EligibilityDecisionInput = z.infer<typeof eligibilityDecisionSchema>;
+
+/** Stage 4 — Evaluator conflict of interest declaration. */
+export const coiDeclarationSchema = z
+  .object({
+    hasConflict: z.boolean(),
+    details: z.string().trim().default(''),
+  })
+  .refine((d) => !d.hasConflict || d.details.length >= 10, {
+    message: 'If declaring a conflict of interest, please provide details (minimum 10 characters)',
+    path: ['details'],
+  });
+export type COIDeclarationInput = z.infer<typeof coiDeclarationSchema>;
+
+/** Stage 4 — Evaluator rubric scorecard. */
+export const scorecardSchema = z.object({
+  technicalMerit: z.coerce.number().int().min(1, 'Score must be at least 1').max(10, 'Score cannot exceed 10'),
+  feasibility: z.coerce.number().int().min(1, 'Score must be at least 1').max(10, 'Score cannot exceed 10'),
+  cost: z.coerce.number().int().min(1, 'Score must be at least 1').max(10, 'Score cannot exceed 10'),
+  fieldFit: z.coerce.number().int().min(1, 'Score must be at least 1').max(10, 'Score cannot exceed 10'),
+  comments: z.string().trim().max(1500).optional(),
+});
+export type ScorecardInput = z.infer<typeof scorecardSchema>;
+

@@ -6,6 +6,7 @@ import { HOME_BY_ROLE, useAuth } from './lib/auth';
 import ApplicationDetail from './pages/ApplicationDetail';
 import ChallengeDetail from './pages/ChallengeDetail';
 import ComingSoon from './pages/ComingSoon';
+import EvaluatorHome from './pages/evaluator/EvaluatorHome';
 import FinanceHome from './pages/finance/FinanceHome';
 import Login from './pages/Login';
 import NewChallenge from './pages/officer/NewChallenge';
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="startup" element={<Protected roles={['STARTUP']}><StartupHome /></Protected>} />
         <Route path="challenges/:id/apply" element={<Protected roles={['STARTUP']}><ApplyForm /></Protected>} />
         <Route path="finance" element={<Protected roles={['FINANCE']}><FinanceHome /></Protected>} />
+        <Route path="evaluator" element={<Protected roles={['EVALUATOR']}><EvaluatorHome /></Protected>} />
         <Route path="challenges/:id" element={<ChallengeDetail />} />
         <Route path="applications/:id" element={<ApplicationDetail />} />
         <Route path="coming-soon" element={<ComingSoon />} />

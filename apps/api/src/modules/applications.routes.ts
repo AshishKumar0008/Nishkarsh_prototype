@@ -10,7 +10,11 @@ import { actorOf, currentUser, requireAuth, requireRole, type AuthUser } from '.
 export const applicationsRouter = Router();
 applicationsRouter.use(requireAuth);
 
-/** Startups see only their own applications; officers only their department's; finance/admin see all. */
+/**
+ * Startups see only their own applications; officers only their department's; evaluators those at or past
+ * the evaluation stage; finance/admin see all.
+ * TODO(stage 6–7): field staff/validators → their pilots. TODO: per-challenge panel assignment for evaluators.
+ */
 export function applicationScope(user: AuthUser): Prisma.ApplicationWhereInput {
   switch (user.role) {
     case 'ADMIN':
@@ -20,7 +24,8 @@ export function applicationScope(user: AuthUser): Prisma.ApplicationWhereInput {
       return { startupId: user.startupId ?? '__none__' };
     case 'DEPT_OFFICER':
       return { challenge: { departmentId: user.departmentId ?? '__none__' } };
-    // TODO(week 2+): evaluators → assigned applications, field staff/validators → their pilots
+    case 'EVALUATOR':
+      return { state: { in: ['ELIGIBLE', 'UNDER_EVALUATION', 'SELECTED', 'REJECTED'] } };
     default:
       return { id: '__none__' };
   }
@@ -30,13 +35,18 @@ const listQuery = z.object({ state: z.string().optional() });
 
 applicationsRouter.get('/', async (req, res) => {
   const { state } = listQuery.parse(req.query);
+  const user = currentUser(req);
+  // Evaluators get their own COI/score status per row (for their worklist) — never other evaluators'
+  const mine = user.role === 'EVALUATOR' ? { where: { evaluatorId: user.id } } : false;
   const apps = await prisma.application.findMany({
-    where: { AND: [applicationScope(currentUser(req)), state ? { state: state as never } : {}] },
+    where: { AND: [applicationScope(user), state ? { state: state as never } : {}] },
     orderBy: { createdAt: 'desc' },
     include: {
       startup: { select: { name: true, district: true } },
       challenge: { select: { id: true, title: true, department: { select: { name: true } } } },
       eligibilityMemo: { select: { autoEligible: true, clausesCited: true, decision: true } },
+      scorecards: mine && { ...mine, select: { evaluatorId: true, weightedTotal: true } },
+      coiDeclarations: mine && { ...mine, select: { evaluatorId: true, hasConflict: true } },
     },
   });
   res.json(apps);

@@ -1,4 +1,4 @@
-import type { ApplicationState, ChallengeState, EligibilityCheck, Role } from '@pragati/shared';
+import type { ApplicationState, ChallengeState, ConsensusResult, EligibilityCheck, Role } from '@pragati/shared';
 
 export interface SessionUser {
   id: string;
@@ -103,6 +103,43 @@ export interface ApplicationDetail {
   startup: { id: string; name: string; district: string; city: string; sectors: string[] };
   challenge: Challenge;
   eligibilityMemo: EligibilityMemo | null;
+}
+
+export interface Scorecard {
+  id: string;
+  applicationId: string;
+  evaluatorId: string;
+  evaluator: { id: string; name: string };
+  technicalMerit: number;
+  feasibility: number;
+  cost: number;
+  fieldFit: number;
+  weightedTotal: number;
+  comments: string | null;
+  submittedAt: string;
+}
+
+export interface COIDeclaration {
+  id: string;
+  applicationId: string;
+  evaluatorId: string;
+  evaluator: { id: string; name: string };
+  hasConflict: boolean;
+  details: string | null;
+  declaredAt: string;
+}
+
+export interface EvaluationOverview {
+  applicationId: string;
+  state: ApplicationState;
+  panel: { id: string; name: string }[];
+  coiDeclarations: COIDeclaration[];
+  scorecards: Scorecard[];
+  /** null while sealed: an evaluator can't see the panel's numbers until they've scored or recused */
+  consensus: ConsensusResult | null;
+  sealed: boolean;
+  myCoi: COIDeclaration | null;
+  myScorecard: Scorecard | null;
 }
 
 export interface AuditEntry {

@@ -1,7 +1,9 @@
+import { APPLICATION_STAGE } from '@pragati/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import AuditTrail from '../components/AuditTrail';
+import EvaluationSection from '../components/EvaluationSection';
 import { ErrorBox } from '../components/Field';
 import StageTimeline from '../components/StageTimeline';
 import StateBadge from '../components/StateBadge';
@@ -12,10 +14,15 @@ import type { ApplicationDetail as Detail, EligibilityMemo } from '../lib/types'
 
 export default function ApplicationDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const { data: a, error, isLoading } = useQuery({ queryKey: ['application', id], queryFn: () => api<Detail>(`/applications/${id}`) });
 
   if (isLoading) return <p className="muted">Loading…</p>;
   if (!a) return <ErrorBox error={error} />;
+
+  // Startups see the outcome (state) but never the panel's scorecards
+  const showEvaluation = user?.role !== 'STARTUP' && (a.state === 'ELIGIBLE' || APPLICATION_STAGE[a.state] >= 4);
+  const canManagePanel = user?.role === 'ADMIN' || (user?.role === 'DEPT_OFFICER' && user.departmentId === a.challenge.departmentId);
 
   return (
     <div className="space-y-6">
@@ -34,6 +41,8 @@ export default function ApplicationDetail() {
       <StageTimeline state={a.state} />
 
       {a.eligibilityMemo && <EligibilityMemoCard applicationId={a.id} memo={a.eligibilityMemo} state={a.state} />}
+
+      {showEvaluation && <EvaluationSection applicationId={a.id} state={a.state} canManage={canManagePanel} />}
 
       <section className="card">
         <h2 className="h2 mb-3">Proposal</h2>

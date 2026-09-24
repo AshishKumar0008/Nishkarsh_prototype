@@ -30,14 +30,19 @@ npm run dev                                   # api :4000, web :5173
 Open http://localhost:5173 and use the **Demo: sign in as…** panel (all passwords `demo1234`).
 Reset everything with `npm run db:reset`.
 
-## Try the stage 1 → 3 flow
+## Try the stage 1 → 4 flow
 
 1. **Department Officer** (Anjali, Latur) → *New challenge* → fill the template → *Sign & publish*.
    The page shows a clustering hint because Dharashiv ZP has an open challenge of the same problem type.
 2. **Startup** (Priya, KrishiSense) → *Apply*. The eligibility screen runs automatically → memo cites **GFR 173(i)** and **170(i)**.
 3. **Startup** (Vikram, AgroLegacy) → apply to the same challenge → memo says *not eligible* (incorporated > 10 years ago).
 4. **Finance Officer** (Suresh) → eligibility queue → confirm one memo, override the other (a written reason is required).
-5. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
+5. **Department Officer** → open the eligible application → *Open Evaluation Panel*.
+6. Each **Evaluator** (Meera, Arjun, Sunita) → declare conflict of interest (final once signed), then score the
+   4-part rubric. Other evaluators' scores stay sealed until you submit yours. Try recusing one of them.
+7. **Department Officer** → *Finalize Consensus*. The system selects/rejects against the 7.0 threshold; it refuses
+   until every panel member has declared and every non-recused member has scored (min. 2 scorecards).
+8. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
    ```sql
    UPDATE "AuditLog" SET payload = '{"hacked":true}' WHERE seq = 3;
    ```
@@ -61,7 +66,7 @@ Reset everything with `npm run db:reset`.
 | 1 Challenge authoring (+ problem-tag clustering, zero-bid referral) | ✅ | ✅ |
 | 2 Application | ✅ | ✅ |
 | 3 Eligibility screen (GFR-citing memo + finance confirm/override) | ✅ | ✅ |
-| 4 Evaluation (scorecards, COI) | schema only | — |
+| 4 Evaluation (COI, weighted rubric, sealed scoring, consensus) | ✅ | ✅ |
 | 5 Pilot agreement + Commitment Card | schema only | — |
 | 6 Milestones + dual sign-off + payment release | schema only | — |
 | 7 Independent validation | schema only | — |
