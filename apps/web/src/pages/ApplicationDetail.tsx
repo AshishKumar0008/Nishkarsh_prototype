@@ -2,6 +2,7 @@ import { APPLICATION_STAGE } from '@pragati/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
+import AgreementSection from '../components/AgreementSection';
 import AuditTrail from '../components/AuditTrail';
 import EvaluationSection from '../components/EvaluationSection';
 import { ErrorBox } from '../components/Field';
@@ -23,6 +24,8 @@ export default function ApplicationDetail() {
   // Startups see the outcome (state) but never the panel's scorecards
   const showEvaluation = user?.role !== 'STARTUP' && (a.state === 'ELIGIBLE' || APPLICATION_STAGE[a.state] >= 4);
   const canManagePanel = user?.role === 'ADMIN' || (user?.role === 'DEPT_OFFICER' && user.departmentId === a.challenge.departmentId);
+  const showAgreement = user?.role !== 'EVALUATOR' && (a.state === 'SELECTED' || APPLICATION_STAGE[a.state] >= 6);
+  const canContract = user?.role === 'FINANCE' && (!user.departmentId || user.departmentId === a.challenge.departmentId);
 
   return (
     <div className="space-y-6">
@@ -43,6 +46,8 @@ export default function ApplicationDetail() {
       {a.eligibilityMemo && <EligibilityMemoCard applicationId={a.id} memo={a.eligibilityMemo} state={a.state} />}
 
       {showEvaluation && <EvaluationSection applicationId={a.id} state={a.state} canManage={canManagePanel} />}
+
+      {showAgreement && <AgreementSection applicationId={a.id} state={a.state} canContract={canContract} />}
 
       <section className="card">
         <h2 className="h2 mb-3">Proposal</h2>

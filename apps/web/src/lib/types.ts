@@ -1,4 +1,12 @@
-import type { ApplicationState, ChallengeState, ConsensusResult, EligibilityCheck, Role } from '@pragati/shared';
+import type {
+  ApplicationState,
+  ChallengeState,
+  ConsensusResult,
+  DataSensitivity,
+  EligibilityCheck,
+  MilestonePlanItem,
+  Role,
+} from '@pragati/shared';
 
 export interface SessionUser {
   id: string;
@@ -140,6 +148,57 @@ export interface EvaluationOverview {
   sealed: boolean;
   myCoi: COIDeclaration | null;
   myScorecard: Scorecard | null;
+}
+
+export interface AgreementMilestone {
+  id: string;
+  sequence: number;
+  title: string;
+  description: string;
+  dueDate: string;
+  paymentTrancheInr: number;
+  status: string;
+}
+
+export interface AgreementCommitment {
+  id: string;
+  party: 'DEPARTMENT' | 'STARTUP';
+  description: string;
+  dueDate: string;
+  status: 'PENDING' | 'MET' | 'MISSED';
+}
+
+export interface PilotAgreement {
+  id: string;
+  templateVersion: string;
+  dataSensitivity: DataSensitivity;
+  pilotStartDate: string;
+  pilotEndDate: string;
+  totalValueInr: number;
+  renderedText: string;
+  contentHash: string;
+  revision: number;
+  integrityOk: boolean;
+  draftedBy: { name: string };
+  startupSignedAt: string | null;
+  startupSigner: { name: string } | null;
+  financeSignedAt: string | null;
+  financeSigner: { name: string } | null;
+  milestones: AgreementMilestone[];
+  commitments: AgreementCommitment[];
+}
+
+export interface AgreementView {
+  agreement: PilotAgreement | null;
+  drafting: {
+    pilotDurationWeeks: number;
+    maxValueInr: number;
+    proposedPriceInr: number;
+    budgetCeilingInr: number;
+    defaultDataSensitivity: DataSensitivity;
+    suggestedMilestones: MilestonePlanItem[];
+    finalTrancheMinPct: number;
+  };
 }
 
 export interface AuditEntry {

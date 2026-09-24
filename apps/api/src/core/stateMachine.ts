@@ -1,7 +1,7 @@
 import { findTransition, type ActorRole, type EntityType } from '@pragati/shared';
 import type { ApplicationState, ChallengeState } from '@prisma/client';
 import { appendAudit } from './auditChain';
-import { HttpError } from './errors';
+import { HttpError, notFound } from './errors';
 import type { Tx } from './prisma';
 
 export interface Actor {
@@ -50,4 +50,18 @@ export async function transition(tx: Tx, { entity, id, to, actor, payload }: Tra
 
   await appendAudit(tx, { entityType: entity, entityId: id, action: rule.action, actor, fromState: from, toState: to, payload });
   return { from, to, action: rule.action };
+}
+
+/**
+ * Locks the application row until the transaction ends and returns its current state. Use it in any step whose
+ * rules depend on the state (scoring, signing…), so a concurrent transition can't slip in between check and write.
+ */
+export async function lockApplication(tx: Tx, id: string): Promise<string> {
+  const rows = await tx.$queryRaw<{ state: string }[]>`SELECT state::text AS state FROM "Application" WHERE id = ${id} FOR UPDATE`;
+  if (!rows[0]) throw notFound('Application');
+  return rows[0].state;
+}
+
+export function requireState(state: string, expected: string, what: string) {
+  if (state !== expected) throw new HttpError(409, `${what} is only possible while the application is ${expected} (it is ${state})`);
 }

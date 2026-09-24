@@ -77,9 +77,9 @@ export const APPLICATION_STAGE: Record<ApplicationState, number> = {
   ELIGIBLE: 3,
   INELIGIBLE: 3,
   UNDER_EVALUATION: 4,
-  SELECTED: 4,
+  SELECTED: 5, // panel done; the pilot agreement is what's in progress
   REJECTED: 4,
-  CONTRACTED: 5,
+  CONTRACTED: 6, // signed; pilot deployment is next
   IN_PILOT: 6,
   AT_RISK: 6,
   UNDER_VALIDATION: 7,

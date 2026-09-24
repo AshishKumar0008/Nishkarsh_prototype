@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { ZodError } from 'zod';
 import { HttpError } from './core/errors';
+import { agreementRouter } from './modules/agreement.routes';
 import { applicationsRouter } from './modules/applications.routes';
 import { auditRouter } from './modules/audit.routes';
 import { authRouter } from './modules/auth.routes';
@@ -20,6 +21,7 @@ export function createApp() {
   app.use('/api/challenges', challengesRouter);
   app.use('/api/applications', applicationsRouter);
   app.use('/api/applications', evaluationRouter);
+  app.use('/api/applications', agreementRouter);
   app.use('/api/audit', auditRouter);
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route not found')));

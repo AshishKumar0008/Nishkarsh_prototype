@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ROLES } from './enums';
+import { DATA_SENSITIVITY, MAX_MILESTONES } from './agreement';
 import { PROBLEM_TAG_CODES } from './problemTags';
 
 /**
@@ -91,3 +92,24 @@ export const scorecardSchema = z.object({
 });
 export type ScorecardInput = z.infer<typeof scorecardSchema>;
 
+
+/** Stage 5 — one milestone in the pilot agreement. Plan-level rules live in validateMilestonePlan(). */
+export const milestonePlanItemSchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().min(10).max(600),
+  dueWeek: z.coerce.number().int().min(1),
+  paymentTrancheInr: z.coerce.number().int().positive(),
+});
+
+/** Stage 5 — finance officer drafts (or revises) the agreement. */
+export const agreementDraftSchema = z.object({
+  pilotStartDate: z.coerce.date(),
+  dataSensitivity: z.enum(DATA_SENSITIVITY),
+  milestones: z.array(milestonePlanItemSchema).min(1).max(MAX_MILESTONES),
+});
+export type AgreementDraftInput = z.infer<typeof agreementDraftSchema>;
+
+/** Stage 5 — a signature is over a specific document: the signer sends back the hash they were shown. */
+export const signAgreementSchema = z.object({
+  contentHash: z.string().regex(/^[0-9a-f]{64}$/, 'Invalid document hash'),
+});

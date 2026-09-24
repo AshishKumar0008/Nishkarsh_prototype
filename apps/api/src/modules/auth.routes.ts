@@ -54,5 +54,8 @@ authRouter.get('/demo-users', async (_req, res) => {
 });
 
 authRouter.get('/me', requireAuth, async (req, res) => {
-  res.json(await prisma.user.findUniqueOrThrow({ where: { id: currentUser(req).id }, select: userSelect }));
+  const user = await prisma.user.findUnique({ where: { id: currentUser(req).id }, select: userSelect });
+  // A valid token for a user that no longer exists (e.g. after a reseed) is a stale session, not a server error
+  if (!user) throw new HttpError(401, 'Session expired — sign in again');
+  res.json(user);
 });

@@ -30,7 +30,7 @@ npm run dev                                   # api :4000, web :5173
 Open http://localhost:5173 and use the **Demo: sign in as…** panel (all passwords `demo1234`).
 Reset everything with `npm run db:reset`.
 
-## Try the stage 1 → 4 flow
+## Try the stage 1 → 5 flow
 
 1. **Department Officer** (Anjali, Latur) → *New challenge* → fill the template → *Sign & publish*.
    The page shows a clustering hint because Dharashiv ZP has an open challenge of the same problem type.
@@ -42,7 +42,11 @@ Reset everything with `npm run db:reset`.
    4-part rubric. Other evaluators' scores stay sealed until you submit yours. Try recusing one of them.
 7. **Department Officer** → *Finalize Consensus*. The system selects/rejects against the 7.0 threshold; it refuses
    until every panel member has declared and every non-recused member has scored (min. 2 scorecards).
-8. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
+8. **Finance Officer** → *Procurement desk* → the selected application → review the suggested milestones
+   (30/40/30, final tranche outcome-linked), watch the Commitment Card preview update, *Generate agreement*.
+9. **Startup** → read the full agreement → sign (you sign its SHA-256 hash). **Finance** → countersign → *Contracted*.
+   Try *Revise agreement* after the startup has signed: their signature is voided and they must re-sign.
+10. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
    ```sql
    UPDATE "AuditLog" SET payload = '{"hacked":true}' WHERE seq = 3;
    ```
@@ -67,7 +71,7 @@ Reset everything with `npm run db:reset`.
 | 2 Application | ✅ | ✅ |
 | 3 Eligibility screen (GFR-citing memo + finance confirm/override) | ✅ | ✅ |
 | 4 Evaluation (COI, weighted rubric, sealed scoring, consensus) | ✅ | ✅ |
-| 5 Pilot agreement + Commitment Card | schema only | — |
+| 5 Pilot agreement (template-rendered, hash-signed) + Commitment Card | ✅ | ✅ |
 | 6 Milestones + dual sign-off + payment release | schema only | — |
 | 7 Independent validation | schema only | — |
 | 8 Decision + failure registry | schema only | — |
@@ -88,7 +92,7 @@ Reset everything with `npm run db:reset`.
 ## Useful commands
 
 ```bash
-npm test                          # unit tests (eligibility engine, audit hashing)
+npm test                          # unit tests (eligibility, evaluation, agreement rules, audit hashing)
 npm run typecheck                 # all workspaces
 npm run db:studio -w @pragati/api # browse the DB
 ```

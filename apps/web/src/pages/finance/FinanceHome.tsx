@@ -7,7 +7,8 @@ import type { ApplicationListItem } from '../../lib/types';
 export default function FinanceHome() {
   const { data = [], isLoading } = useQuery({ queryKey: ['applications'], queryFn: () => api<ApplicationListItem[]>('/applications') });
   const pending = data.filter((a) => a.state === 'ELIGIBILITY_PENDING');
-  const decided = data.filter((a) => a.state !== 'ELIGIBILITY_PENDING');
+  const toContract = data.filter((a) => a.state === 'SELECTED');
+  const decided = data.filter((a) => a.state !== 'ELIGIBILITY_PENDING' && a.state !== 'SELECTED');
 
   const table = (rows: ApplicationListItem[]) => (
     <table className="w-full text-sm">
@@ -34,13 +35,20 @@ export default function FinanceHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="h1">Eligibility queue</h1>
+        <h1 className="h1">Procurement desk</h1>
         <p className="muted">The system screens every application and cites the GFR clause. You confirm or override — the final call is always yours.</p>
       </div>
       <section className="card overflow-x-auto">
         <h2 className="h2 mb-3">Awaiting your confirmation ({pending.length})</h2>
         {isLoading ? <p className="muted">Loading…</p> : pending.length ? table(pending) : <p className="muted">Nothing waiting.</p>}
       </section>
+      {toContract.length > 0 && (
+        <section className="card overflow-x-auto">
+          <h2 className="h2 mb-1">Pilot agreements to draft or countersign ({toContract.length})</h2>
+          <p className="muted mb-3">Selected by the evaluation panel. Draft the milestone contract; countersign once the startup has signed.</p>
+          {table(toContract)}
+        </section>
+      )}
       {decided.length > 0 && (
         <section className="card overflow-x-auto">
           <h2 className="h2 mb-3">Decided</h2>

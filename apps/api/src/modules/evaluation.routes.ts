@@ -10,7 +10,7 @@ import { Router } from 'express';
 import { appendAudit } from '../core/auditChain';
 import { forbidden, HttpError, notFound, param } from '../core/errors';
 import { prisma, type Tx } from '../core/prisma';
-import { SYSTEM_ACTOR, transition } from '../core/stateMachine';
+import { lockApplication, requireState, SYSTEM_ACTOR, transition } from '../core/stateMachine';
 import { actorOf, currentUser, requireAuth, requireRole, type AuthUser } from '../middleware/auth';
 import { applicationScope } from './applications.routes';
 
@@ -31,21 +31,7 @@ function loadPanel(db: Tx | typeof prisma) {
   return db.user.findMany({ where: { role: 'EVALUATOR' }, select: evaluatorSelect, orderBy: { name: 'asc' } });
 }
 
-/**
- * Locks the application row for the rest of the transaction and returns its state, so a scorecard can't land
- * while finalisation is computing consensus (and vice versa).
- */
-async function lockApplication(tx: Tx, id: string): Promise<string> {
-  const rows = await tx.$queryRaw<{ state: string }[]>`SELECT state::text AS state FROM "Application" WHERE id = ${id} FOR UPDATE`;
-  if (!rows[0]) throw notFound('Application');
-  return rows[0].state;
-}
-
-function requireState(state: string, expected: string, what: string) {
-  if (state !== expected) throw new HttpError(409, `${what} is only possible while the application is ${expected} (it is ${state})`);
-}
-
-async function computePanelConsensus(db: Tx | typeof prisma, applicationId: string): Promise<ConsensusResult> {
+export async function computePanelConsensus(db: Tx | typeof prisma, applicationId: string): Promise<ConsensusResult> {
   const [panel, cois, cards] = await Promise.all([
     loadPanel(db),
     db.cOIDeclaration.findMany({ where: { applicationId }, include: { evaluator: { select: evaluatorSelect } } }),

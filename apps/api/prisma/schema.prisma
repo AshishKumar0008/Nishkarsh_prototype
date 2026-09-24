@@ -113,16 +113,18 @@ model User {
   startup      Startup?    @relation(fields: [startupId], references: [id])
   createdAt    DateTime    @default(now())
 
-  challengesAuthored    Challenge[]         @relation("ChallengeAuthor")
-  applicationsSubmitted Application[]       @relation("ApplicationSubmitter")
-  eligibilityDecisions  EligibilityMemo[]   @relation("EligibilityDecider")
-  scorecards            Scorecard[]
-  coiDeclarations       COIDeclaration[]
-  agreementsSigned      PilotAgreement[]    @relation("AgreementFinanceSigner")
-  milestoneSignoffs     MilestoneSignoff[]
-  validationReports     ValidationReport[]
-  decisions             Decision[]
-  auditEntries          AuditLog[]
+  challengesAuthored      Challenge[]        @relation("ChallengeAuthor")
+  applicationsSubmitted   Application[]      @relation("ApplicationSubmitter")
+  eligibilityDecisions    EligibilityMemo[]  @relation("EligibilityDecider")
+  scorecards              Scorecard[]
+  coiDeclarations         COIDeclaration[]
+  agreementsDrafted       PilotAgreement[]   @relation("AgreementDrafter")
+  agreementsSignedStartup PilotAgreement[]   @relation("AgreementStartupSigner")
+  agreementsSigned        PilotAgreement[]   @relation("AgreementFinanceSigner")
+  milestoneSignoffs       MilestoneSignoff[]
+  validationReports       ValidationReport[]
+  decisions               Decision[]
+  auditEntries            AuditLog[]
 }
 
 // ─── Stage 1: Challenge authoring ───────────────────────────────────────────
@@ -189,8 +191,8 @@ model Application {
   decisions        Decision[]
   failureRecord    FailureRecord?
   evidencePackets  EvidencePacket[]
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@unique([challengeId, startupId])
 }
@@ -251,22 +253,32 @@ model COIDeclaration {
 // ─── Stage 5: Pilot agreement + Commitment Card ─────────────────────────────
 
 model PilotAgreement {
-  id                 String       @id @default(cuid())
-  applicationId      String       @unique
-  application        Application  @relation(fields: [applicationId], references: [id])
-  templateVersion    String
-  ipTerms            String
-  dataTerms          String
-  cybersecurityTerms String
-  exitTerms          String
-  totalValueInr      Int
-  startupSignedAt    DateTime?
-  financeSignedAt    DateTime?
-  financeSignerId    String?
-  financeSigner      User?        @relation("AgreementFinanceSigner", fields: [financeSignerId], references: [id])
-  milestones         Milestone[]
-  commitments        Commitment[]
-  createdAt          DateTime     @default(now())
+  id              String       @id @default(cuid())
+  applicationId   String       @unique
+  application     Application  @relation(fields: [applicationId], references: [id])
+  templateVersion String
+  dataSensitivity String // STANDARD | SENSITIVE_PII — picks the ip-data-clauses variant
+  pilotStartDate  DateTime
+  pilotEndDate    DateTime
+  totalValueInr   Int
+  /// The exact document both parties sign. Never edited once either party has signed.
+  renderedText    String
+  /// sha256(renderedText) — each signature is over this hash.
+  contentHash     String
+  /// Bumped every time the finance officer redrafts before execution.
+  revision        Int          @default(1)
+  draftedById     String
+  draftedBy       User         @relation("AgreementDrafter", fields: [draftedById], references: [id])
+  startupSignedAt DateTime?
+  startupSignerId String?
+  startupSigner   User?        @relation("AgreementStartupSigner", fields: [startupSignerId], references: [id])
+  financeSignedAt DateTime?
+  financeSignerId String?
+  financeSigner   User?        @relation("AgreementFinanceSigner", fields: [financeSignerId], references: [id])
+  milestones      Milestone[]
+  commitments     Commitment[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 /// Two-sided obligations: department non-performance is tracked, not just the startup's.
