@@ -1,0 +1,392 @@
+// PraGaTi Setu — data model for all 9 workflow stages.
+// Stages 1–3 are wired end to end; models for 4–9 are in place so their API work can start in parallel.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Keep in sync with packages/shared/src/enums.ts
+enum Role {
+  DEPT_OFFICER
+  STARTUP
+  FINANCE
+  EVALUATOR
+  FIELD_STAFF
+  VALIDATOR
+  ADMIN
+}
+
+enum ChallengeState {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  NO_ELIGIBLE_BIDS
+}
+
+enum ApplicationState {
+  SUBMITTED
+  ELIGIBILITY_PENDING
+  ELIGIBLE
+  INELIGIBLE
+  UNDER_EVALUATION
+  SELECTED
+  REJECTED
+  CONTRACTED
+  IN_PILOT
+  AT_RISK
+  UNDER_VALIDATION
+  AWAITING_DECISION
+  SCALED
+  TERMINATED
+}
+
+enum EligibilityDecision {
+  PENDING
+  CONFIRMED
+  OVERRIDDEN
+}
+
+enum CommitmentParty {
+  DEPARTMENT
+  STARTUP
+}
+
+enum CommitmentStatus {
+  PENDING
+  MET
+  MISSED
+}
+
+enum MilestoneStatus {
+  PENDING
+  FIELD_SIGNED
+  COMPLETE
+  AT_RISK
+}
+
+enum DecisionOutcome {
+  SCALE
+  EXTEND
+  TERMINATE
+}
+
+// ─── Parties ────────────────────────────────────────────────────────────────
+
+model Department {
+  id         String      @id @default(cuid())
+  code       String      @unique
+  name       String
+  district   String
+  users      User[]
+  challenges Challenge[]
+  createdAt  DateTime    @default(now())
+}
+
+model Startup {
+  id                  String        @id @default(cuid())
+  name                String
+  dpiitNumber         String?       @unique
+  incorporationDate   DateTime
+  turnoverLatestFyInr Int
+  sectors             String[]
+  city                String
+  district            String
+  users               User[]
+  applications        Application[]
+  createdAt           DateTime      @default(now())
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         Role
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  startupId    String?
+  startup      Startup?    @relation(fields: [startupId], references: [id])
+  createdAt    DateTime    @default(now())
+
+  challengesAuthored    Challenge[]         @relation("ChallengeAuthor")
+  applicationsSubmitted Application[]       @relation("ApplicationSubmitter")
+  eligibilityDecisions  EligibilityMemo[]   @relation("EligibilityDecider")
+  scorecards            Scorecard[]
+  coiDeclarations       COIDeclaration[]
+  agreementsSigned      PilotAgreement[]    @relation("AgreementFinanceSigner")
+  milestoneSignoffs     MilestoneSignoff[]
+  validationReports     ValidationReport[]
+  decisions             Decision[]
+  auditEntries          AuditLog[]
+}
+
+// ─── Stage 1: Challenge authoring ───────────────────────────────────────────
+
+model Challenge {
+  id                  String         @id @default(cuid())
+  title               String
+  problemStatement    String
+  problemTag          String // code from packages/shared/src/problemTags.ts
+  sector              String
+  district            String
+  fieldSite           String
+  budgetHead          String
+  metricName          String
+  metricUnit          String
+  baselineValue       Float
+  targetValue         Float
+  minFieldAdoptionPct Int
+  budgetCeilingInr    Int
+  pilotDurationWeeks  Int
+  applicationDeadline DateTime
+  aiAssisted          Boolean        @default(false)
+  state               ChallengeState @default(DRAFT)
+  publishedAt         DateTime?
+  departmentId        String
+  department          Department     @relation(fields: [departmentId], references: [id])
+  createdById         String
+  createdBy           User           @relation("ChallengeAuthor", fields: [createdById], references: [id])
+  applications        Application[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([problemTag, state])
+}
+
+// ─── Stage 2: Application ───────────────────────────────────────────────────
+
+model Application {
+  id               String           @id @default(cuid())
+  state            ApplicationState @default(SUBMITTED)
+  challengeId      String
+  challenge        Challenge        @relation(fields: [challengeId], references: [id])
+  startupId        String
+  startup          Startup          @relation(fields: [startupId], references: [id])
+  submittedById    String
+  submittedBy      User             @relation("ApplicationSubmitter", fields: [submittedById], references: [id])
+  solutionSummary  String
+  approach         String
+  pilotPlan        String
+  teamSummary      String
+  priorEvidence    String?
+  proposedPriceInr Int
+
+  // Self-declaration snapshot at submission time — the memo is judged against these, not today's profile
+  declaredDpiitNumber       String?
+  declaredIncorporationDate DateTime
+  declaredTurnoverInr       Int
+
+  eligibilityMemo  EligibilityMemo?
+  scorecards       Scorecard[]
+  coiDeclarations  COIDeclaration[]
+  agreement        PilotAgreement?
+  validationReport ValidationReport?
+  decisions        Decision[]
+  failureRecord    FailureRecord?
+  evidencePackets  EvidencePacket[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([challengeId, startupId])
+}
+
+// ─── Stage 3: Eligibility screen ────────────────────────────────────────────
+
+model EligibilityMemo {
+  id            String              @id @default(cuid())
+  applicationId String              @unique
+  application   Application         @relation(fields: [applicationId], references: [id])
+  rulesVersion  String
+  autoEligible  Boolean
+  clausesCited  String[]
+  waived        String[]
+  checks        Json
+  summary       String
+  decision      EligibilityDecision @default(PENDING)
+  finalEligible Boolean?
+  officerNote   String?
+  decidedById   String?
+  decidedBy     User?               @relation("EligibilityDecider", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  createdAt     DateTime            @default(now())
+}
+
+// ─── Stage 4: Expert evaluation ─────────────────────────────────────────────
+
+model Scorecard {
+  id             String      @id @default(cuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id])
+  evaluatorId    String
+  evaluator      User        @relation(fields: [evaluatorId], references: [id])
+  technicalMerit Int // 1–10
+  feasibility    Int
+  cost           Int
+  fieldFit       Int
+  weightedTotal  Float
+  comments       String?
+  submittedAt    DateTime    @default(now())
+
+  @@unique([applicationId, evaluatorId])
+}
+
+model COIDeclaration {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id])
+  evaluatorId   String
+  evaluator     User        @relation(fields: [evaluatorId], references: [id])
+  hasConflict   Boolean
+  details       String?
+  declaredAt    DateTime    @default(now())
+
+  @@unique([applicationId, evaluatorId])
+}
+
+// ─── Stage 5: Pilot agreement + Commitment Card ─────────────────────────────
+
+model PilotAgreement {
+  id                 String       @id @default(cuid())
+  applicationId      String       @unique
+  application        Application  @relation(fields: [applicationId], references: [id])
+  templateVersion    String
+  ipTerms            String
+  dataTerms          String
+  cybersecurityTerms String
+  exitTerms          String
+  totalValueInr      Int
+  startupSignedAt    DateTime?
+  financeSignedAt    DateTime?
+  financeSignerId    String?
+  financeSigner      User?        @relation("AgreementFinanceSigner", fields: [financeSignerId], references: [id])
+  milestones         Milestone[]
+  commitments        Commitment[]
+  createdAt          DateTime     @default(now())
+}
+
+/// Two-sided obligations: department non-performance is tracked, not just the startup's.
+model Commitment {
+  id          String           @id @default(cuid())
+  agreementId String
+  agreement   PilotAgreement   @relation(fields: [agreementId], references: [id])
+  party       CommitmentParty
+  description String
+  dueDate     DateTime
+  status      CommitmentStatus @default(PENDING)
+  resolvedAt  DateTime?
+}
+
+// ─── Stage 6: Milestone execution ───────────────────────────────────────────
+
+model Milestone {
+  id                String             @id @default(cuid())
+  agreementId       String
+  agreement         PilotAgreement     @relation(fields: [agreementId], references: [id])
+  sequence          Int
+  title             String
+  description       String
+  dueDate           DateTime
+  paymentTrancheInr Int
+  status            MilestoneStatus    @default(PENDING)
+  /// Simulated: set automatically once BOTH field staff and validator have signed.
+  paymentReleasedAt DateTime?
+  signoffs          MilestoneSignoff[]
+
+  @@unique([agreementId, sequence])
+}
+
+model MilestoneSignoff {
+  id          String    @id @default(cuid())
+  milestoneId String
+  milestone   Milestone @relation(fields: [milestoneId], references: [id])
+  signerId    String
+  signer      User      @relation(fields: [signerId], references: [id])
+  signerRole  Role
+  note        String?
+  evidenceUrl String?
+  signedAt    DateTime  @default(now())
+
+  @@unique([milestoneId, signerRole])
+}
+
+// ─── Stage 7: Independent validation ────────────────────────────────────────
+
+model ValidationReport {
+  id                     String      @id @default(cuid())
+  applicationId          String      @unique
+  application            Application @relation(fields: [applicationId], references: [id])
+  validatorId            String
+  validator              User        @relation(fields: [validatorId], references: [id])
+  vendorReportedValue    Float
+  validatorMeasuredValue Float
+  fieldAdoptionPct       Int
+  discrepancyPct         Float
+  discrepancyFlag        Boolean
+  thresholdMet           Boolean
+  methodology            String
+  signedAt               DateTime    @default(now())
+}
+
+// ─── Stage 8: Decision + failure registry ───────────────────────────────────
+
+model Decision {
+  id                String          @id @default(cuid())
+  applicationId     String
+  application       Application     @relation(fields: [applicationId], references: [id])
+  outcome           DecisionOutcome
+  thresholdsApplied Json
+  rationale         String
+  gfrClauseCited    String?
+  decidedById       String
+  decidedBy         User            @relation(fields: [decidedById], references: [id])
+  decidedAt         DateTime        @default(now())
+}
+
+model FailureRecord {
+  id             String      @id @default(cuid())
+  applicationId  String      @unique
+  application    Application @relation(fields: [applicationId], references: [id])
+  problemTag     String
+  reasonCategory String
+  details        String
+  lessons        String?
+  createdAt      DateTime    @default(now())
+}
+
+// ─── Stage 9: Evidence packet ───────────────────────────────────────────────
+
+model EvidencePacket {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id])
+  contentHash   String
+  auditHeadHash String
+  fileUrl       String?
+  generatedAt   DateTime    @default(now())
+}
+
+// ─── Cross-cutting: hash-chained, append-only audit log ─────────────────────
+
+/// Never UPDATE or DELETE rows here. hash = sha256(prevHash + canonical JSON of the entry).
+model AuditLog {
+  seq        Int      @id @default(autoincrement())
+  entityType String
+  entityId   String
+  action     String
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorRole  String
+  fromState  String?
+  toState    String?
+  payload    Json
+  prevHash   String
+  hash       String   @unique
+  createdAt  DateTime
+
+  @@index([entityType, entityId])
+}
