@@ -80,6 +80,7 @@ async function main() {
     { email: 'evaluator2@panel.demo', name: 'Arjun Rao (Technical Evaluator)', role: 'EVALUATOR' },
     { email: 'evaluator3@panel.demo', name: 'Sunita Waghmare (Field-site Representative)', role: 'EVALUATOR' },
     { email: 'field@latur.demo', name: 'Ganesh More (Krishi Sahayak)', role: 'FIELD_STAFF', departmentId: latur.id },
+    { email: 'field@dharashiv.demo', name: 'Kavita Jagtap (Krishi Sahayak)', role: 'FIELD_STAFF', departmentId: dharashiv.id },
     { email: 'validator@vnmkv.demo', name: 'Prof. S. Gaikwad (VNMKV Parbhani)', role: 'VALIDATOR' },
     { email: 'admin@msins.demo', name: 'MSInS Programme Admin', role: 'ADMIN' },
   ] as const;

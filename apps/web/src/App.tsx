@@ -9,6 +9,7 @@ import ComingSoon from './pages/ComingSoon';
 import EvaluatorHome from './pages/evaluator/EvaluatorHome';
 import FinanceHome from './pages/finance/FinanceHome';
 import Login from './pages/Login';
+import PilotWorklist from './pages/pilots/PilotWorklist';
 import NewChallenge from './pages/officer/NewChallenge';
 import OfficerHome from './pages/officer/OfficerHome';
 import ApplyForm from './pages/startup/ApplyForm';
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="challenges/:id/apply" element={<Protected roles={['STARTUP']}><ApplyForm /></Protected>} />
         <Route path="finance" element={<Protected roles={['FINANCE']}><FinanceHome /></Protected>} />
         <Route path="evaluator" element={<Protected roles={['EVALUATOR']}><EvaluatorHome /></Protected>} />
+        <Route path="pilots" element={<Protected roles={['FIELD_STAFF', 'VALIDATOR']}><PilotWorklist /></Protected>} />
         <Route path="challenges/:id" element={<ChallengeDetail />} />
         <Route path="applications/:id" element={<ApplicationDetail />} />
         <Route path="coming-soon" element={<ComingSoon />} />

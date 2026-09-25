@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import AgreementSection from '../components/AgreementSection';
 import AuditTrail from '../components/AuditTrail';
+import PilotSection from '../components/PilotSection';
 import EvaluationSection from '../components/EvaluationSection';
 import { ErrorBox } from '../components/Field';
 import StageTimeline from '../components/StageTimeline';
@@ -21,10 +22,12 @@ export default function ApplicationDetail() {
   if (isLoading) return <p className="muted">Loading…</p>;
   if (!a) return <ErrorBox error={error} />;
 
-  // Startups see the outcome (state) but never the panel's scorecards
-  const showEvaluation = user?.role !== 'STARTUP' && (a.state === 'ELIGIBLE' || APPLICATION_STAGE[a.state] >= 4);
+  // Same roles the evaluation API allows: startups, field staff and validators never see the panel's scorecards
+  const showEvaluation =
+    ['DEPT_OFFICER', 'FINANCE', 'EVALUATOR', 'ADMIN'].includes(user?.role ?? '') && (a.state === 'ELIGIBLE' || APPLICATION_STAGE[a.state] >= 4);
   const canManagePanel = user?.role === 'ADMIN' || (user?.role === 'DEPT_OFFICER' && user.departmentId === a.challenge.departmentId);
   const showAgreement = user?.role !== 'EVALUATOR' && (a.state === 'SELECTED' || APPLICATION_STAGE[a.state] >= 6);
+  const showPilot = user?.role !== 'EVALUATOR' && APPLICATION_STAGE[a.state] >= 6;
   const canContract = user?.role === 'FINANCE' && (!user.departmentId || user.departmentId === a.challenge.departmentId);
 
   return (
@@ -48,6 +51,8 @@ export default function ApplicationDetail() {
       {showEvaluation && <EvaluationSection applicationId={a.id} state={a.state} canManage={canManagePanel} />}
 
       {showAgreement && <AgreementSection applicationId={a.id} state={a.state} canContract={canContract} />}
+
+      {showPilot && <PilotSection applicationId={a.id} state={a.state} canManage={canManagePanel} />}
 
       <section className="card">
         <h2 className="h2 mb-3">Proposal</h2>

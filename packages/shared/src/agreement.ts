@@ -102,8 +102,22 @@ export const addDays = (d: Date, days: number) => new Date(d.getTime() + days * 
 export const milestoneDueDate = (pilotStart: Date, dueWeek: number) => addDays(pilotStart, dueWeek * 7);
 export const pilotEndDate = (pilotStart: Date, pilotDurationWeeks: number) => addDays(pilotStart, pilotDurationWeeks * 7);
 
+export const COMMITMENT_KINDS = [
+  'SITE_ACCESS',
+  'VALIDATOR_DESIGNATION',
+  'TRANCHE_PAYMENT',
+  'MILESTONE_DELIVERY',
+  'ISSUE_RESPONSE',
+  'DATA_HANDOVER',
+] as const;
+export type CommitmentKind = (typeof COMMITMENT_KINDS)[number];
+
 export interface CommitmentItem {
   party: 'DEPARTMENT' | 'STARTUP';
+  /** What event fulfils it — lets Stage 6 mark it met automatically. */
+  kind: CommitmentKind;
+  /** For per-milestone commitments: 1-based milestone number. */
+  milestoneSequence?: number;
   description: string;
   dueDate: Date;
 }
@@ -116,10 +130,12 @@ export interface CommitmentItem {
 export function buildCommitmentCard(milestones: MilestonePlanItem[], pilotStart: Date, pilotDurationWeeks: number): CommitmentItem[] {
   const end = pilotEndDate(pilotStart, pilotDurationWeeks);
   const dept: CommitmentItem[] = [
-    { party: 'DEPARTMENT', description: 'Give the Startup access to the field site and name a field-site supervisor', dueDate: pilotStart },
-    { party: 'DEPARTMENT', description: 'Designate the independent validator for this pilot', dueDate: addDays(pilotStart, 14) },
+    { party: 'DEPARTMENT', kind: 'SITE_ACCESS', description: 'Give the Startup access to the field site and name a field-site supervisor', dueDate: pilotStart },
+    { party: 'DEPARTMENT', kind: 'VALIDATOR_DESIGNATION', description: 'Designate the independent validator for this pilot', dueDate: addDays(pilotStart, 14) },
     ...milestones.map((m, i) => ({
       party: 'DEPARTMENT' as const,
+      kind: 'TRANCHE_PAYMENT' as const,
+      milestoneSequence: i + 1,
       description: `Release tranche ${i + 1} (${formatInrPlain(m.paymentTrancheInr)}) within ${PAYMENT_RELEASE_DAYS} days of both sign-offs on "${m.title}"`,
       dueDate: addDays(milestoneDueDate(pilotStart, m.dueWeek), PAYMENT_RELEASE_DAYS),
     })),
@@ -127,11 +143,42 @@ export function buildCommitmentCard(milestones: MilestonePlanItem[], pilotStart:
   const startup: CommitmentItem[] = [
     ...milestones.map((m, i) => ({
       party: 'STARTUP' as const,
+      kind: 'MILESTONE_DELIVERY' as const,
+      milestoneSequence: i + 1,
       description: `Deliver milestone ${i + 1}: ${m.title}`,
       dueDate: milestoneDueDate(pilotStart, m.dueWeek),
     })),
-    { party: 'STARTUP', description: 'Respond to field-site issues within 48 hours throughout the pilot', dueDate: end },
-    { party: 'STARTUP', description: 'Hand over Pilot Data in an open format (clause 7)', dueDate: addDays(end, 14) },
+    { party: 'STARTUP', kind: 'ISSUE_RESPONSE', description: 'Respond to field-site issues within 48 hours throughout the pilot', dueDate: end },
+    { party: 'STARTUP', kind: 'DATA_HANDOVER', description: 'Hand over Pilot Data in an open format (clause 7)', dueDate: addDays(end, 14) },
   ];
   return [...dept, ...startup];
+}
+
+/** How a commitment stands right now. Overdue is computed at read time — no scheduler needed. */
+export type CommitmentStanding = 'MET_ON_TIME' | 'MET_LATE' | 'OVERDUE' | 'OPEN';
+
+export function commitmentStanding(
+  c: { status: string; dueDate: Date | string; resolvedAt: Date | string | null },
+  now: Date = new Date(),
+): CommitmentStanding {
+  const due = new Date(c.dueDate);
+  if (c.status === 'MET') return c.resolvedAt && new Date(c.resolvedAt) > due ? 'MET_LATE' : 'MET_ON_TIME';
+  return now > due ? 'OVERDUE' : 'OPEN';
+}
+
+/** Per-party scorecard for the Commitment Card: the same yardstick for the department and the startup. */
+export function commitmentScore(
+  rows: { party: string; status: string; dueDate: Date | string; resolvedAt: Date | string | null }[],
+  now: Date = new Date(),
+) {
+  const score = (party: string) => {
+    const standings = rows.filter((r) => r.party === party).map((r) => commitmentStanding(r, now));
+    return {
+      total: standings.length,
+      metOnTime: standings.filter((s) => s === 'MET_ON_TIME').length,
+      metLate: standings.filter((s) => s === 'MET_LATE').length,
+      overdue: standings.filter((s) => s === 'OVERDUE').length,
+    };
+  };
+  return { DEPARTMENT: score('DEPARTMENT'), STARTUP: score('STARTUP') };
 }

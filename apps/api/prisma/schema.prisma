@@ -63,10 +63,9 @@ enum CommitmentStatus {
 }
 
 enum MilestoneStatus {
-  PENDING
-  FIELD_SIGNED
-  COMPLETE
-  AT_RISK
+  PENDING // not yet submitted, or returned for rework
+  SUBMITTED // evidence in, awaiting field-supervisor + validator sign-off
+  COMPLETE // both signed
 }
 
 enum DecisionOutcome {
@@ -121,6 +120,8 @@ model User {
   agreementsDrafted       PilotAgreement[]   @relation("AgreementDrafter")
   agreementsSignedStartup PilotAgreement[]   @relation("AgreementStartupSigner")
   agreementsSigned        PilotAgreement[]   @relation("AgreementFinanceSigner")
+  pilotsSupervised        PilotAgreement[]   @relation("PilotFieldSupervisor")
+  pilotsValidated         PilotAgreement[]   @relation("PilotValidator")
   milestoneSignoffs       MilestoneSignoff[]
   validationReports       ValidationReport[]
   decisions               Decision[]
@@ -253,32 +254,38 @@ model COIDeclaration {
 // ─── Stage 5: Pilot agreement + Commitment Card ─────────────────────────────
 
 model PilotAgreement {
-  id              String       @id @default(cuid())
-  applicationId   String       @unique
-  application     Application  @relation(fields: [applicationId], references: [id])
-  templateVersion String
-  dataSensitivity String // STANDARD | SENSITIVE_PII — picks the ip-data-clauses variant
-  pilotStartDate  DateTime
-  pilotEndDate    DateTime
-  totalValueInr   Int
+  id                String       @id @default(cuid())
+  applicationId     String       @unique
+  application       Application  @relation(fields: [applicationId], references: [id])
+  templateVersion   String
+  dataSensitivity   String // STANDARD | SENSITIVE_PII — picks the ip-data-clauses variant
+  pilotStartDate    DateTime
+  pilotEndDate      DateTime
+  totalValueInr     Int
   /// The exact document both parties sign. Never edited once either party has signed.
-  renderedText    String
+  renderedText      String
   /// sha256(renderedText) — each signature is over this hash.
-  contentHash     String
+  contentHash       String
   /// Bumped every time the finance officer redrafts before execution.
-  revision        Int          @default(1)
-  draftedById     String
-  draftedBy       User         @relation("AgreementDrafter", fields: [draftedById], references: [id])
-  startupSignedAt DateTime?
-  startupSignerId String?
-  startupSigner   User?        @relation("AgreementStartupSigner", fields: [startupSignerId], references: [id])
-  financeSignedAt DateTime?
-  financeSignerId String?
-  financeSigner   User?        @relation("AgreementFinanceSigner", fields: [financeSignerId], references: [id])
-  milestones      Milestone[]
-  commitments     Commitment[]
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  revision          Int          @default(1)
+  draftedById       String
+  draftedBy         User         @relation("AgreementDrafter", fields: [draftedById], references: [id])
+  startupSignedAt   DateTime?
+  startupSignerId   String?
+  startupSigner     User?        @relation("AgreementStartupSigner", fields: [startupSignerId], references: [id])
+  financeSignedAt   DateTime?
+  financeSignerId   String?
+  financeSigner     User?        @relation("AgreementFinanceSigner", fields: [financeSignerId], references: [id])
+  // Stage 6 — who signs off in the field, and the independent validator (department commitments)
+  pilotStartedAt    DateTime?
+  fieldSupervisorId String?
+  fieldSupervisor   User?        @relation("PilotFieldSupervisor", fields: [fieldSupervisorId], references: [id])
+  validatorId       String?
+  validator         User?        @relation("PilotValidator", fields: [validatorId], references: [id])
+  milestones        Milestone[]
+  commitments       Commitment[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 }
 
 /// Two-sided obligations: department non-performance is tracked, not just the startup's.
@@ -287,6 +294,9 @@ model Commitment {
   agreementId String
   agreement   PilotAgreement   @relation(fields: [agreementId], references: [id])
   party       CommitmentParty
+  kind        String // COMMITMENT_KINDS in packages/shared/src/agreement.ts
+  milestoneId String?
+  milestone   Milestone?       @relation(fields: [milestoneId], references: [id])
   description String
   dueDate     DateTime
   status      CommitmentStatus @default(PENDING)
@@ -305,9 +315,16 @@ model Milestone {
   dueDate           DateTime
   paymentTrancheInr Int
   status            MilestoneStatus    @default(PENDING)
-  /// Simulated: set automatically once BOTH field staff and validator have signed.
+  submittedAt       DateTime?
+  evidenceSummary   String?
+  evidenceUrl       String?
+  /// Why the last submission was sent back (cleared on resubmission).
+  returnNote        String?
+  completedAt       DateTime?
+  /// Simulated: set automatically once BOTH field supervisor and validator have signed (final tranche: after Stage 7).
   paymentReleasedAt DateTime?
   signoffs          MilestoneSignoff[]
+  commitments       Commitment[]
 
   @@unique([agreementId, sequence])
 }

@@ -1,6 +1,7 @@
 import type {
   ApplicationState,
   ChallengeState,
+  CommitmentStanding,
   ConsensusResult,
   DataSensitivity,
   EligibilityCheck,
@@ -199,6 +200,54 @@ export interface AgreementView {
     suggestedMilestones: MilestonePlanItem[];
     finalTrancheMinPct: number;
   };
+}
+
+export interface PilotMilestone {
+  id: string;
+  sequence: number;
+  title: string;
+  description: string;
+  dueDate: string;
+  paymentTrancheInr: number;
+  status: 'PENDING' | 'SUBMITTED' | 'COMPLETE';
+  submittedAt: string | null;
+  evidenceSummary: string | null;
+  evidenceUrl: string | null;
+  returnNote: string | null;
+  completedAt: string | null;
+  paymentReleasedAt: string | null;
+  signoffs: { id: string; signerRole: 'FIELD_STAFF' | 'VALIDATOR'; note: string | null; signedAt: string; signer: { name: string } }[];
+}
+
+export interface PartyScore {
+  total: number;
+  metOnTime: number;
+  metLate: number;
+  overdue: number;
+}
+
+export interface PilotView {
+  state: ApplicationState;
+  pilotStartDate: string;
+  pilotEndDate: string;
+  pilotStartedAt: string | null;
+  fieldSupervisor: { id: string; name: string } | null;
+  validator: { id: string; name: string } | null;
+  milestones: PilotMilestone[];
+  commitments: (AgreementCommitment & { kind: string; resolvedAt: string | null; standing: CommitmentStanding })[];
+  commitmentScore: { DEPARTMENT: PartyScore; STARTUP: PartyScore };
+  atRisk: { note?: string; since: string } | null;
+  candidates: { fieldStaff: { id: string; name: string }[]; validators: { id: string; name: string }[] } | null;
+}
+
+export interface WorklistItem {
+  id: string;
+  state: ApplicationState;
+  startup: { name: string };
+  challenge: { title: string; fieldSite: string; department: { name: string } };
+  pilotEndDate?: string;
+  milestones: { sequence: number; title: string; status: string; dueDate: string; signoffs: { signerRole: string }[] }[];
+  awaitingMe: number;
 }
 
 export interface AuditEntry {
