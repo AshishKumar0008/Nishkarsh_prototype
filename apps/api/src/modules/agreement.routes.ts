@@ -107,7 +107,7 @@ async function renderAgreement(db: Tx, app: AppForAgreement, input: AgreementDra
 
   const c = app.challenge;
   const renderedText = renderTemplate(agreementTpl.body, {
-    agreementRef: `PGS/${start.getUTCFullYear()}/${app.id.slice(-8).toUpperCase()}/R${revision}`,
+    agreementRef: `NSK/${start.getUTCFullYear()}/${app.id.slice(-8).toUpperCase()}/R${revision}`,
     templateVersion: agreementTpl.version,
     departmentName: c.department.name,
     district: c.district,

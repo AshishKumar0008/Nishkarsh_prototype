@@ -34,7 +34,7 @@ export default function Login() {
   return (
     <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-4 py-10 md:grid-cols-2">
       <div>
-        <h1 className="text-3xl font-bold text-indigo-800">PraGaTi Setu</h1>
+        <h1 className="text-3xl font-bold text-indigo-800">Nishkarsh</h1>
         <p className="mt-3 text-slate-600">
           A standing pathway from a department's operational problem to an independently verified pilot and an
           audit-ready scale-up decision under GFR 173(i).

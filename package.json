@@ -1,8 +1,8 @@
 {
-  "name": "pragati-setu",
+  "name": "nishkarsh",
   "version": "0.1.0",
   "private": true,
-  "description": "PraGaTi Setu — pilot-to-procurement evidence and contracting layer (PS 26136)",
+  "description": "Nishkarsh — pilot-to-procurement evidence and contracting layer (PS 26136)",
   "workspaces": [
     "packages/*",
     "apps/*"

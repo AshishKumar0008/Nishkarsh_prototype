@@ -1,4 +1,4 @@
-# PraGaTi Setu
+# Nishkarsh
 
 A pilot-to-procurement evidence and contracting layer for Maharashtra (SIH PS 26136).
 Outcome-based challenge → GFR-cited eligibility → evaluation → milestone pilot → independent validation → audit-ready evidence packet.

@@ -13,7 +13,7 @@ export default function Layout() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <NavLink to={HOME_BY_ROLE[user.role]} className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-indigo-800">PraGaTi Setu</span>
+            <span className="text-lg font-bold text-indigo-800">Nishkarsh</span>
             <span className="hidden text-xs text-slate-500 sm:inline">Pilot-to-procurement pathway · Govt. of Maharashtra</span>
           </NavLink>
           <div className="flex flex-wrap items-center gap-3">

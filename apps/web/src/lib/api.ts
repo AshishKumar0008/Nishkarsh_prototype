@@ -1,4 +1,4 @@
-const TOKEN_KEY = 'pragati.token';
+const TOKEN_KEY = 'nishkarsh.token';
 
 export const tokenStore = {
   get(): string | null {

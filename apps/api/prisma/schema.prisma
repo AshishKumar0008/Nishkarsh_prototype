@@ -1,4 +1,4 @@
-// PraGaTi Setu — data model for all 9 workflow stages.
+// Nishkarsh — data model for all 9 workflow stages.
 // Stages 1–3 are wired end to end; models for 4–9 are in place so their API work can start in parallel.
 
 generator client {
