@@ -147,7 +147,7 @@ async function renderAgreement(db: Tx, app: AppForAgreement, input: AgreementDra
 }
 
 // View the agreement (or, before one exists, what finance needs to draft it)
-agreementRouter.get('/:id/agreement', requireRole('FINANCE', 'DEPT_OFFICER', 'STARTUP', 'ADMIN'), async (req, res) => {
+agreementRouter.get('/:id/agreement', requireRole('FINANCE', 'DEPT_OFFICER', 'STARTUP', 'FIELD_STAFF', 'VALIDATOR', 'ADMIN'), async (req, res) => {
   const id = param(req, 'id');
   const visible = await prisma.application.count({ where: { AND: [{ id }, applicationScope(currentUser(req))] } });
   if (!visible) throw notFound('Application');
@@ -223,7 +223,16 @@ agreementRouter.put('/:id/agreement', requireRole('FINANCE'), async (req, res) =
         paymentTrancheInr: m.paymentTrancheInr,
       })),
     });
-    await tx.commitment.createMany({ data: doc.commitments.map((c) => ({ ...c, agreementId })) });
+    const milestoneIds = new Map(
+      (await tx.milestone.findMany({ where: { agreementId }, select: { id: true, sequence: true } })).map((m) => [m.sequence, m.id]),
+    );
+    await tx.commitment.createMany({
+      data: doc.commitments.map(({ milestoneSequence, ...c }) => ({
+        ...c,
+        agreementId,
+        milestoneId: milestoneSequence ? milestoneIds.get(milestoneSequence) : null,
+      })),
+    });
 
     await appendAudit(tx, {
       entityType: 'APPLICATION',

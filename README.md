@@ -30,7 +30,7 @@ npm run dev                                   # api :4000, web :5173
 Open http://localhost:5173 and use the **Demo: sign in as…** panel (all passwords `demo1234`).
 Reset everything with `npm run db:reset`.
 
-## Try the stage 1 → 5 flow
+## Try the stage 1 → 6 flow
 
 1. **Department Officer** (Anjali, Latur) → *New challenge* → fill the template → *Sign & publish*.
    The page shows a clustering hint because Dharashiv ZP has an open challenge of the same problem type.
@@ -46,7 +46,15 @@ Reset everything with `npm run db:reset`.
    (30/40/30, final tranche outcome-linked), watch the Commitment Card preview update, *Generate agreement*.
 9. **Startup** → read the full agreement → sign (you sign its SHA-256 hash). **Finance** → countersign → *Contracted*.
    Try *Revise agreement* after the startup has signed: their signature is voided and they must re-sign.
-10. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
+10. **Department Officer** → *Start pilot*: name the field-site supervisor (Ganesh); leave the validator for later.
+    Watch the Commitment Card: the department's first commitment turns *Met on time*.
+11. **Startup** → submit milestone 1 with evidence. Milestones must go in order.
+12. **Field Staff** (home = *my pilots* worklist) → approve. It stays *Awaiting sign-off*: no validator yet, and that
+    is the department's commitment. **Officer** → designate the validator (Prof. Gaikwad).
+13. **Validator** → *Return for rework* with a reason (this voids the field approval too), or approve → both signed →
+    milestone complete, tranche released automatically (simulated). The final tranche is held for Stage 7.
+    Field staff can *Flag pilot at risk*, which pauses all sign-offs until they confirm corrective action.
+14. On any application, **Verify hash chain**. Then tamper with a row in the DB and verify again:
    ```sql
    UPDATE "AuditLog" SET payload = '{"hacked":true}' WHERE seq = 3;
    ```
@@ -72,7 +80,7 @@ Reset everything with `npm run db:reset`.
 | 3 Eligibility screen (GFR-citing memo + finance confirm/override) | ✅ | ✅ |
 | 4 Evaluation (COI, weighted rubric, sealed scoring, consensus) | ✅ | ✅ |
 | 5 Pilot agreement (template-rendered, hash-signed) + Commitment Card | ✅ | ✅ |
-| 6 Milestones + dual sign-off + payment release | schema only | — |
+| 6 Milestones: dual sign-off, auto payment release, at-risk loop, live Commitment Card | ✅ | ✅ |
 | 7 Independent validation | schema only | — |
 | 8 Decision + failure registry | schema only | — |
 | 9 Evidence packet (PDF) | schema only | — |

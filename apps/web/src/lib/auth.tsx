@@ -64,8 +64,8 @@ export const HOME_BY_ROLE: Record<Role, string> = {
   STARTUP: '/startup',
   FINANCE: '/finance',
   EVALUATOR: '/evaluator',
-  FIELD_STAFF: '/coming-soon',
-  VALIDATOR: '/coming-soon',
+  FIELD_STAFF: '/pilots',
+  VALIDATOR: '/pilots',
   ADMIN: '/coming-soon',
 };
 

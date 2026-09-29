@@ -12,8 +12,8 @@ applicationsRouter.use(requireAuth);
 
 /**
  * Startups see only their own applications; officers only their department's; evaluators those at or past
- * the evaluation stage; finance/admin see all.
- * TODO(stage 6–7): field staff/validators → their pilots. TODO: per-challenge panel assignment for evaluators.
+ * the evaluation stage; field supervisors / validators only the pilots they are assigned to; finance/admin see all.
+ * TODO: per-challenge panel assignment for evaluators.
  */
 export function applicationScope(user: AuthUser): Prisma.ApplicationWhereInput {
   switch (user.role) {
@@ -24,6 +24,10 @@ export function applicationScope(user: AuthUser): Prisma.ApplicationWhereInput {
       return { startupId: user.startupId ?? '__none__' };
     case 'DEPT_OFFICER':
       return { challenge: { departmentId: user.departmentId ?? '__none__' } };
+    case 'FIELD_STAFF':
+      return { agreement: { fieldSupervisorId: user.id } };
+    case 'VALIDATOR':
+      return { agreement: { validatorId: user.id } };
     case 'EVALUATOR':
       return { state: { in: ['ELIGIBLE', 'UNDER_EVALUATION', 'SELECTED', 'REJECTED'] } };
     default:

@@ -113,3 +113,40 @@ export type AgreementDraftInput = z.infer<typeof agreementDraftSchema>;
 export const signAgreementSchema = z.object({
   contentHash: z.string().regex(/^[0-9a-f]{64}$/, 'Invalid document hash'),
 });
+
+/** Stage 6 — officer starts the pilot by naming who signs off in the field (and optionally the validator). */
+export const startPilotSchema = z.object({
+  fieldSupervisorId: z.string().min(1),
+  validatorId: z.string().min(1).optional(),
+});
+
+export const assignValidatorSchema = z.object({ validatorId: z.string().min(1) });
+
+/** Only http(s) links — a bare url() check also accepts javascript: URLs, which would be clickable in the UI. */
+const httpUrl = z
+  .string()
+  .trim()
+  .url()
+  .refine((u) => /^https?:\/\//i.test(u), 'Link must start with http:// or https://');
+
+/** Stage 6 — startup submits evidence that a milestone is done. */
+export const milestoneSubmitSchema = z.object({
+  evidenceSummary: z.string().trim().min(20, 'Describe what was delivered in at least 20 characters').max(2000),
+  evidenceUrl: httpUrl.optional().or(z.literal('').transform(() => undefined)),
+});
+
+/** Stage 6 — field supervisor / validator approve a submitted milestone or send it back. */
+export const milestoneSignoffSchema = z
+  .object({
+    decision: z.enum(['APPROVE', 'RETURN']),
+    note: z.string().trim().max(1000).default(''),
+  })
+  .refine((d) => d.decision === 'APPROVE' || d.note.length >= 10, {
+    message: 'Say what needs fixing (at least 10 characters) — the startup sees this',
+    path: ['note'],
+  });
+
+/** Stage 6 — field supervisor flags the pilot at risk, or resolves it after corrective action. */
+export const pilotRiskSchema = z.object({
+  note: z.string().trim().min(15, 'Explain in at least 15 characters').max(1000),
+});

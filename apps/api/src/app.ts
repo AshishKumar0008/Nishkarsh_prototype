@@ -9,6 +9,7 @@ import { authRouter } from './modules/auth.routes';
 import { challengesRouter } from './modules/challenges.routes';
 import { evaluationRouter } from './modules/evaluation.routes';
 import { metaRouter } from './modules/meta.routes';
+import { pilotRouter, pilotWorklistRouter } from './modules/pilot.routes';
 
 export function createApp() {
   const app = express();
@@ -22,6 +23,8 @@ export function createApp() {
   app.use('/api/applications', applicationsRouter);
   app.use('/api/applications', evaluationRouter);
   app.use('/api/applications', agreementRouter);
+  app.use('/api/applications', pilotRouter);
+  app.use('/api/pilots', pilotWorklistRouter);
   app.use('/api/audit', auditRouter);
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route not found')));

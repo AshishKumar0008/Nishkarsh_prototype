@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildCommitmentCard,
+  commitmentScore,
+  commitmentStanding,
   defaultDataSensitivity,
   planTotal,
   suggestMilestones,
@@ -71,5 +73,36 @@ describe('defaultDataSensitivity', () => {
   it('uses the personal-data clause set for health and education', () => {
     expect(defaultDataSensitivity('HEALTH')).toBe('SENSITIVE_PII');
     expect(defaultDataSensitivity('AGRICULTURE')).toBe('STANDARD');
+  });
+});
+
+describe('commitment standing', () => {
+  const due = '2026-12-01T00:00:00Z';
+  const now = new Date('2026-12-10T00:00:00Z');
+
+  it('distinguishes on-time, late, overdue and open', () => {
+    expect(commitmentStanding({ status: 'MET', dueDate: due, resolvedAt: '2026-11-30T00:00:00Z' }, now)).toBe('MET_ON_TIME');
+    expect(commitmentStanding({ status: 'MET', dueDate: due, resolvedAt: '2026-12-05T00:00:00Z' }, now)).toBe('MET_LATE');
+    expect(commitmentStanding({ status: 'PENDING', dueDate: due, resolvedAt: null }, now)).toBe('OVERDUE');
+    expect(commitmentStanding({ status: 'PENDING', dueDate: '2027-01-01T00:00:00Z', resolvedAt: null }, now)).toBe('OPEN');
+  });
+
+  it('scores the department with the same yardstick as the startup', () => {
+    const s = commitmentScore(
+      [
+        { party: 'DEPARTMENT', status: 'MET', dueDate: due, resolvedAt: '2026-12-09T00:00:00Z' },
+        { party: 'DEPARTMENT', status: 'PENDING', dueDate: due, resolvedAt: null },
+        { party: 'STARTUP', status: 'MET', dueDate: due, resolvedAt: '2026-11-01T00:00:00Z' },
+      ],
+      now,
+    );
+    expect(s.DEPARTMENT).toEqual({ total: 2, metOnTime: 0, metLate: 1, overdue: 1 });
+    expect(s.STARTUP).toEqual({ total: 1, metOnTime: 1, metLate: 0, overdue: 0 });
+  });
+
+  it('tags every per-milestone commitment with its milestone', () => {
+    const card = buildCommitmentCard(suggestMilestones(16, 9_00_000), new Date('2026-11-01'), 16);
+    expect(card.filter((c) => c.kind === 'TRANCHE_PAYMENT').map((c) => c.milestoneSequence)).toEqual([1, 2, 3]);
+    expect(card.filter((c) => c.kind === 'MILESTONE_DELIVERY').map((c) => c.milestoneSequence)).toEqual([1, 2, 3]);
   });
 });
