@@ -20,6 +20,7 @@ async function main() {
   // Wipe in dependency order (dev only — the audit log is otherwise never deleted)
   await prisma.$transaction([
     prisma.auditLog.deleteMany(),
+    prisma.aiDraft.deleteMany(),
     prisma.evidencePacket.deleteMany(),
     prisma.failureRecord.deleteMany(),
     prisma.decision.deleteMany(),

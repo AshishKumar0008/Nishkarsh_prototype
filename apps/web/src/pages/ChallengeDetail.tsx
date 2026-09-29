@@ -37,6 +37,11 @@ export default function ChallengeDetail() {
           <div className="flex flex-wrap items-center gap-2">
             <StateBadge state={c.state} />
             <span className="text-xs text-slate-500">{getProblemTag(c.problemTag)?.label}</span>
+            {c.aiAssisted && (
+              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-800" title="Wording drafted with the AI assistant, reviewed and signed by the officer">
+                ✦ AI-assisted draft · officer reviewed
+              </span>
+            )}
           </div>
           <h1 className="h1 mt-2">{c.title}</h1>
           <p className="muted">{c.department.name} · authored by {c.createdBy.name}</p>
@@ -107,6 +112,30 @@ export default function ChallengeDetail() {
           <p className="text-sm">Apply by: <strong>{formatDate(c.applicationDeadline)}</strong></p>
         </section>
       </div>
+
+      {c.aiDraft?.fieldReview && (
+        <section className="card text-sm">
+          <h2 className="h2 mb-1">AI drafting record</h2>
+          <p className="muted mb-3">
+            {c.aiDraft.provider === 'offline-rules' ? 'Offline keyword rules' : c.aiDraft.model} · {c.aiDraft.promptVersion} ·{' '}
+            {formatDate(c.aiDraft.createdAt)}. Sealed into the audit chain when the challenge was saved.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(c.aiDraft.fieldReview).map(([field, verdict]) => (
+              <span
+                key={field}
+                className={`rounded-full px-2 py-0.5 text-xs ${verdict === 'ACCEPTED' ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-800'}`}
+              >
+                {field}: {verdict === 'ACCEPTED' ? 'kept as suggested' : 'changed by officer'}
+              </span>
+            ))}
+          </div>
+          {c.aiDraft.warnings.length > 0 && (
+            <p className="mt-2 text-amber-800">Numbers flagged as not in the officer's notes: {c.aiDraft.warnings.join(', ')}</p>
+          )}
+          <p className="mt-2 text-slate-500">Baseline, target, adoption %, budget and deadline were entered by the officer.</p>
+        </section>
+      )}
 
       {user?.role !== 'STARTUP' && (
         <section className="card overflow-x-auto">

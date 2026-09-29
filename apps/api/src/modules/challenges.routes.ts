@@ -1,4 +1,4 @@
-import { applySchema, createChallengeSchema, getProblemTag } from '@pragati/shared';
+import { aiChallengeDraftSchema, applySchema, createChallengeSchema, getProblemTag, reviewDraftAgainstFinal } from '@pragati/shared';
 import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
@@ -56,9 +56,14 @@ challengesRouter.get('/:id', async (req, res) => {
     include: {
       department: { select: { name: true, district: true } },
       createdBy: { select: { name: true } },
+      aiDraft: { select: { provider: true, model: true, promptVersion: true, createdAt: true, fieldReview: true, warnings: true } },
     },
   });
   if (!challenge) throw notFound('Challenge');
+  // Everyone sees that AI helped draft it; only the owning department sees the per-field review.
+  if (challenge.aiDraft && !canSeeAllApplications(user, challenge.departmentId)) {
+    challenge.aiDraft = { ...challenge.aiDraft, fieldReview: null, warnings: [] };
+  }
 
   const applications = await prisma.application.findMany({
     where: {
@@ -72,24 +77,48 @@ challengesRouter.get('/:id', async (req, res) => {
   res.json({ ...challenge, applications, clusterMatches: await findClusterMatches(prisma, challenge) });
 });
 
-// Stage 1 — author a challenge (saved as DRAFT)
+// Stage 1 — author a challenge (saved as DRAFT). If the officer used the AI assistant, its provenance is sealed into the audit entry.
 challengesRouter.post('/', requireRole('DEPT_OFFICER'), async (req, res) => {
   const user = currentUser(req);
   if (!user.departmentId) throw forbidden('Your account is not linked to a department');
-  const input = createChallengeSchema.parse(req.body);
+  const { aiDraftId, ...input } = createChallengeSchema.parse(req.body);
   const tag = getProblemTag(input.problemTag)!;
 
   const challenge = await prisma.$transaction(async (tx) => {
     const created = await tx.challenge.create({
-      data: { ...input, sector: tag.sector, departmentId: user.departmentId!, createdById: user.id },
+      data: { ...input, aiAssisted: Boolean(aiDraftId), sector: tag.sector, departmentId: user.departmentId!, createdById: user.id },
     });
+
+    let aiProvenance: Record<string, unknown> | undefined;
+    if (aiDraftId) {
+      const draft = await tx.aiDraft.findUnique({ where: { id: aiDraftId } });
+      if (!draft || draft.requestedById !== user.id) throw new HttpError(422, 'AI draft not found for your account');
+      const fieldReview = reviewDraftAgainstFinal(aiChallengeDraftSchema.parse(draft.output), input);
+      // guarded claim: a draft can back exactly one challenge
+      const claimed = await tx.aiDraft.updateMany({
+        where: { id: draft.id, challengeId: null },
+        data: { challengeId: created.id, fieldReview },
+      });
+      if (claimed.count === 0) throw new HttpError(409, 'This AI draft was already used for another challenge');
+      aiProvenance = {
+        draftId: draft.id,
+        provider: draft.provider,
+        model: draft.model,
+        promptVersion: draft.promptVersion,
+        outputHash: draft.outputHash,
+        unsupportedNumbers: draft.warnings,
+        fieldReview,
+        humanOnlyFields: 'baseline, target, adoption %, budget, duration and deadline entered by the officer',
+      };
+    }
+
     await appendAudit(tx, {
       entityType: 'CHALLENGE',
       entityId: created.id,
       action: 'CHALLENGE_CREATED',
       actor: actorOf(req),
       toState: 'DRAFT',
-      payload: { ...input, sector: tag.sector },
+      payload: { ...input, sector: tag.sector, aiAssisted: Boolean(aiDraftId), ...(aiProvenance && { aiProvenance }) },
     });
     return created;
   });

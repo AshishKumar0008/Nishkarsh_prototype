@@ -69,6 +69,8 @@ Reset everything with `npm run db:reset`.
 3. **The audit log is append-only.** Use `appendAudit()`; never update or delete `AuditLog` rows.
 4. **Validation lives in `packages/shared/src/schemas.ts`**, used by both the API and the forms.
 5. **AI never decides.** Nothing AI-generated may call `transition()`; AI output is only ever a draft a human submits.
+   AI may not fill thresholds (baseline, target, adoption %, budget, deadline) — those are pass/fail contract terms.
+   Every AI suggestion is stored in `AiDraft` with model + prompt version, and its hash goes into the audit chain on use.
 6. Money is stored as whole rupees (`Int`, suffix `Inr`).
 
 ## Status
@@ -76,6 +78,7 @@ Reset everything with `npm run db:reset`.
 | Stage | Backend | UI |
 |---|---|---|
 | 1 Challenge authoring (+ problem-tag clustering, zero-bid referral) | ✅ | ✅ |
+| 1 AI drafting assistant (suggest-only, PII redaction, invented-number flags, per-field provenance) | ✅ | ✅ |
 | 2 Application | ✅ | ✅ |
 | 3 Eligibility screen (GFR-citing memo + finance confirm/override) | ✅ | ✅ |
 | 4 Evaluation (COI, weighted rubric, sealed scoring, consensus) | ✅ | ✅ |
@@ -96,6 +99,19 @@ Reset everything with `npm run db:reset`.
 | Frontend B | startup, field staff, validator screens, shared components |
 | Domain lead | `templates/`, GFR rule data in `packages/shared/src/eligibility.ts`, rubric weights, problem tags |
 | Demo lead | `apps/api/prisma/seed.ts` storyline, demo script, backup recording |
+
+## AI drafting assistant (Stage 1)
+
+Optional. Set `ANTHROPIC_API_KEY` in `apps/api/.env` to use Claude (`AI_MODEL` overrides the model); without it the
+assistant runs in **offline keyword-rules mode** and says so in the UI, so the demo never depends on a network call.
+
+- The officer pastes rough notes → gets suggested title, problem statement, problem tag (fixed list only), field site,
+  metric name and unit, plus clarifying questions. **Numbers the officer must supply are never suggested.**
+- Phone, Aadhaar and email patterns are redacted server-side before anything is sent to the model.
+- Numbers in the draft that aren't in the notes are flagged as possibly invented.
+- On save, the challenge's audit entry records provider, model, prompt version, output hash and, per field, whether the
+  officer kept or changed the suggestion. `aiAssisted` is derived server-side — the client can't set it.
+- Contract: [packages/shared/src/aiDraft.ts](packages/shared/src/aiDraft.ts); provider: [apps/api/src/core/ai/challengeDrafter.ts](apps/api/src/core/ai/challengeDrafter.ts).
 
 ## Useful commands
 

@@ -45,6 +45,34 @@ export interface Challenge {
   createdAt: string;
 }
 
+export interface AiDraftResponse {
+  id: string;
+  provider: 'anthropic' | 'offline-rules';
+  model: string;
+  promptVersion: string;
+  output: {
+    title: string;
+    problemStatement: string;
+    problemTag: string;
+    fieldSite: string;
+    metricName: string;
+    metricUnit: string;
+    clarifyingQuestions: string[];
+  };
+  unsupportedNumbers: string[];
+  redactions: Record<string, number>;
+  latencyMs: number;
+}
+
+export interface AiDraftProvenance {
+  provider: string;
+  model: string;
+  promptVersion: string;
+  createdAt: string;
+  fieldReview: Record<string, 'ACCEPTED' | 'CHANGED'> | null;
+  warnings: string[];
+}
+
 export interface ChallengeListItem extends Challenge {
   _count: { applications: number };
   applications?: { id: string; state: ApplicationState }[];
@@ -60,6 +88,7 @@ export interface ClusterMatch {
 
 export interface ChallengeDetail extends Challenge {
   createdBy: { name: string };
+  aiDraft: AiDraftProvenance | null;
   applications: {
     id: string;
     state: ApplicationState;
