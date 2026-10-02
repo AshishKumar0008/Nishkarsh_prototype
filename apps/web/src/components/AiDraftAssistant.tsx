@@ -100,12 +100,20 @@ export default function AiDraftAssistant({
                 </div>
               )}
 
+              {d.output.problemTag === null && (
+                <div className="rounded-md border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-900">
+                  <strong>No matching problem type.</strong> None of the fixed types fits these notes, so none is suggested.
+                  Choose the closest one yourself, or ask the domain lead to add a new type — a forced match would link this
+                  challenge to unrelated problems in other districts.
+                </div>
+              )}
+
               <dl className="divide-y divide-slate-100 text-sm">
                 {shown.map((f) => (
                   <div key={f} className="flex items-start gap-3 py-2">
                     <dt className="w-36 shrink-0 text-slate-500">{FIELD_LABELS[f]}</dt>
                     <dd className="flex-1 whitespace-pre-line">
-                      {f === 'problemTag' ? getProblemTag(d.output.problemTag)?.label : d.output[f]}
+                      {f === 'problemTag' ? getProblemTag(d.output.problemTag ?? '')?.label : d.output[f]}
                     </dd>
                     <button type="button" className="text-xs text-violet-700 hover:underline" onClick={() => onApply(d, [f])}>
                       Use

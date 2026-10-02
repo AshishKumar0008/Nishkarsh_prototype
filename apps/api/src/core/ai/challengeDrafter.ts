@@ -31,7 +31,7 @@ Rules — follow all of them:
 2. Use ONLY facts present in the officer's notes. Do not invent statistics, counts, percentages, costs or dates. If a number is not in the notes, leave it out.
 3. Do not propose a baseline value, target value, adoption percentage, budget, duration or deadline. The officer sets those from department records.
 4. For the outcome metric, suggest only a measurable metric NAME and its UNIT (e.g. "Water used per hectare per season", "m³/ha").
-5. Choose problemTag strictly from the provided enum — the one closest to the core problem.
+5. Choose problemTag strictly from the provided list. If none genuinely fits the core problem, return null — never force-fit a tag, because tags are used to match the same problem across districts. Likewise leave metricName and metricUnit empty if no sensible measurable outcome follows from the notes.
 6. fieldSite: copy the pilot location only if the notes state it; otherwise return an empty string.
 7. Plain, neutral English a startup founder and a district official can both follow. Problem statement: 80–200 words covering what happens today, who is affected and why it matters.
 8. Use clarifyingQuestions (max 5) for information the officer should add — especially where today's baseline figure will come from.
@@ -50,7 +50,7 @@ const TOOL = {
     properties: {
       title: { type: 'string', description: 'Outcome-focused title, 8–120 characters' },
       problemStatement: { type: 'string' },
-      problemTag: { type: 'string', enum: PROBLEM_TAGS.map((t) => t.code) },
+      problemTag: { type: ['string', 'null'], enum: [...PROBLEM_TAGS.map((t) => t.code), null] },
       fieldSite: { type: 'string' },
       metricName: { type: 'string' },
       metricUnit: { type: 'string' },

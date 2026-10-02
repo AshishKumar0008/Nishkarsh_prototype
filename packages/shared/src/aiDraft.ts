@@ -40,10 +40,11 @@ export const aiChallengeDraftSchema = z
   .object({
     title: z.string().trim().min(8).max(160),
     problemStatement: z.string().trim().min(50).max(2000),
-    problemTag: z.enum(PROBLEM_TAG_CODES),
+    /** null = nothing in the fixed taxonomy fits. Never force-fit: a wrong tag breaks cross-district clustering. */
+    problemTag: z.enum(PROBLEM_TAG_CODES).nullable(),
     fieldSite: z.string().trim().max(160).default(''),
-    metricName: z.string().trim().min(3).max(120),
-    metricUnit: z.string().trim().min(1).max(30),
+    metricName: z.string().trim().max(120).default(''),
+    metricUnit: z.string().trim().max(30).default(''),
     clarifyingQuestions: z.array(z.string().trim().min(5).max(300)).max(5).default([]),
   })
   .strict();
@@ -131,9 +132,10 @@ const TAG_METRICS: Record<ProblemTagCode, { metricName: string; metricUnit: stri
   ROAD_ASSET_MONITORING: { metricName: 'Reported defects repaired within SLA', metricUnit: '%' },
 };
 
-export function suggestProblemTag(notes: string): ProblemTagCode {
+/** Keyword match against the taxonomy; null when nothing matches (no silent default). */
+export function suggestProblemTag(notes: string): ProblemTagCode | null {
   const text = notes.toLowerCase();
-  let best: ProblemTagCode = PROBLEM_TAG_CODES[0];
+  let best: ProblemTagCode | null = null;
   let bestScore = 0;
   for (const code of PROBLEM_TAG_CODES) {
     const score = TAG_KEYWORDS[code].reduce((s, kw) => s + (text.split(kw).length - 1), 0);
@@ -145,7 +147,8 @@ export function suggestProblemTag(notes: string): ProblemTagCode {
 export function offlineChallengeDraft(notes: string): AiChallengeDraft {
   const clean = notes.trim().replace(/\s+/g, ' ');
   const tag = suggestProblemTag(clean);
-  const firstSentence = clean.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, '');
+  const sentence = clean.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, '');
+  const firstSentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
   const title = firstSentence.length > 100 ? `${firstSentence.slice(0, 97).trimEnd()}…` : firstSentence;
   const site = clean.match(/\b([A-Z][a-z]+ (?:taluka|block|tehsil|village|ward))\b/)?.[1] ?? '';
   return aiChallengeDraftSchema.parse({
@@ -153,8 +156,14 @@ export function offlineChallengeDraft(notes: string): AiChallengeDraft {
     problemStatement: clean.length >= 50 ? clean : `${clean} (expand: who is affected and why it matters)`,
     problemTag: tag,
     fieldSite: site,
-    ...TAG_METRICS[tag],
+    ...(tag ? TAG_METRICS[tag] : {}),
     clarifyingQuestions: [
+      ...(tag
+        ? []
+        : [
+            'None of the fixed problem types matched. Pick the closest one, or ask the domain lead to add a new type.',
+            'What single measurable outcome would show this problem is solved (name and unit)?',
+          ]),
       'What is today’s measured baseline for this metric, and which record is it taken from?',
       'Which villages / facilities will host the pilot, and how many?',
       'Which frontline staff role will use the solution day to day?',

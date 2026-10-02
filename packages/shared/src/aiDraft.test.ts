@@ -68,4 +68,12 @@ describe('offline fallback', () => {
     expect(Object.keys(d)).not.toContain('baselineValue');
     expect(d.clarifyingQuestions.length).toBeGreaterThan(0);
   });
+
+  it('returns no tag and no metric when nothing in the taxonomy fits, instead of a default', () => {
+    const d = offlineChallengeDraft('in dharavi slum area there is lots of a problem of dogs because they are attacking the children');
+    expect(d.problemTag).toBeNull();
+    expect(d.metricName).toBe('');
+    expect(d.title.startsWith('In dharavi')).toBe(true);
+    expect(d.clarifyingQuestions[0]).toMatch(/None of the fixed problem types/);
+  });
 });

@@ -40,7 +40,7 @@ export default function NewChallenge() {
     const fresh = draft.id !== aiDraft?.id;
     setAiDraft(draft);
     setAiFields((prev) => new Set([...(fresh ? [] : prev), ...fields]));
-    setForm((f) => ({ ...f, ...Object.fromEntries(fields.map((k) => [k, draft.output[k]])) }));
+    setForm((f) => ({ ...f, ...Object.fromEntries(fields.map((k) => [k, draft.output[k] ?? ''])) }));
   };
 
   /** Label suffix so the officer always sees which text came from the assistant. */

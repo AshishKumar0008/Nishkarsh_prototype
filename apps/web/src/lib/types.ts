@@ -53,7 +53,7 @@ export interface AiDraftResponse {
   output: {
     title: string;
     problemStatement: string;
-    problemTag: string;
+    problemTag: string | null;
     fieldSite: string;
     metricName: string;
     metricUnit: string;
