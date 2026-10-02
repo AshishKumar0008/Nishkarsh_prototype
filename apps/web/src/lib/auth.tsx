@@ -1,4 +1,4 @@
-import type { Role } from '@pragati/shared';
+import type { Role } from '@nishkarsh/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { api, tokenStore } from './api';

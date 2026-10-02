@@ -1,4 +1,4 @@
-import { ROLE_LABELS } from '@pragati/shared';
+import { ROLE_LABELS } from '@nishkarsh/shared';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { HOME_BY_ROLE, useAuth } from '../lib/auth';
 import RoleSwitcher from './RoleSwitcher';

@@ -5,7 +5,7 @@ import {
   MIN_ACTIVE_SCORECARDS,
   scorecardSchema,
   type ConsensusResult,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 import { Router } from 'express';
 import { appendAudit } from '../core/auditChain';
 import { forbidden, HttpError, notFound, param } from '../core/errors';

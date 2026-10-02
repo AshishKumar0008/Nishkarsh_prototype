@@ -8,10 +8,10 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @pragati/api\" \"npm run dev -w @pragati/web\"",
-    "db:migrate": "npm run db:migrate -w @pragati/api",
-    "db:seed": "npm run db:seed -w @pragati/api",
-    "db:reset": "npm run db:reset -w @pragati/api",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @nishkarsh/api\" \"npm run dev -w @nishkarsh/web\"",
+    "db:migrate": "npm run db:migrate -w @nishkarsh/api",
+    "db:seed": "npm run db:seed -w @nishkarsh/api",
+    "db:reset": "npm run db:reset -w @nishkarsh/api",
     "demo:pilot": "node scripts/demo-pilot.mjs",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"

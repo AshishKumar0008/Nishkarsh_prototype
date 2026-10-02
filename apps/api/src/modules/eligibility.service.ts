@@ -1,4 +1,4 @@
-import { evaluateEligibility } from '@pragati/shared';
+import { evaluateEligibility } from '@nishkarsh/shared';
 import type { Prisma } from '@prisma/client';
 import type { Tx } from '../core/prisma';
 import { SYSTEM_ACTOR, transition } from '../core/stateMachine';

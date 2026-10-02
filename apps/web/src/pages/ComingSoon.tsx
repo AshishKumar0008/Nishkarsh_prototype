@@ -1,4 +1,4 @@
-import { ROLE_LABELS } from '@pragati/shared';
+import { ROLE_LABELS } from '@nishkarsh/shared';
 import { useAuth } from '../lib/auth';
 
 const PLANNED: Record<string, { stage: string; week: string; does: string }> = {

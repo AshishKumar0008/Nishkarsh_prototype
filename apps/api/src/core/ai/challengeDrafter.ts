@@ -4,7 +4,7 @@ import {
   offlineChallengeDraft,
   PROBLEM_TAGS,
   type AiChallengeDraft,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 import { HttpError } from '../errors';
 
 /**

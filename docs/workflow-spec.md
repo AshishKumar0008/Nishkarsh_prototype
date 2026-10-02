@@ -1,4 +1,4 @@
-# PraGaTi Setu — End-to-End Workflow Specification
+# Nishkarsh — End-to-End Workflow Specification
 ### PS 26136: Startup-Friendly Public Procurement (Government of Maharashtra)
 
 This document defines the validated 9-stage workflow at three levels of detail: a high-level flowchart with decision logic, a swimlane view by actor, and a detailed stage-by-stage table. Use this as the single source of truth before writing any code.

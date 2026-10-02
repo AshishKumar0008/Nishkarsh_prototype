@@ -1,4 +1,4 @@
-import { applySchema } from '@pragati/shared';
+import { applySchema } from '@nishkarsh/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';

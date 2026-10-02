@@ -1,4 +1,4 @@
-import { GFR_CLAUSES, PROBLEM_TAGS, ROLE_LABELS, RULES_VERSION, STAGES } from '@pragati/shared';
+import { GFR_CLAUSES, PROBLEM_TAGS, ROLE_LABELS, RULES_VERSION, STAGES } from '@nishkarsh/shared';
 import { Router } from 'express';
 
 export const metaRouter = Router();

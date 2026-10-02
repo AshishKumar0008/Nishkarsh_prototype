@@ -20,7 +20,7 @@ Outcome-based challenge → GFR-cited eligibility → evaluation → milestone p
 Requires Node ≥ 20 and PostgreSQL running locally.
 
 ```bash
-createdb pragati_setu
+createdb nishkarsh
 cp apps/api/.env.example apps/api/.env      # then set DATABASE_URL to your Postgres user
 npm install
 npm run db:migrate                            # creates tables + runs seed
@@ -128,6 +128,6 @@ assistant runs in **offline keyword-rules mode** and says so in the UI, so the d
 ```bash
 npm test                          # unit tests (eligibility, evaluation, agreement rules, audit hashing)
 npm run typecheck                 # all workspaces
-npm run db:studio -w @pragati/api # browse the DB
+npm run db:studio -w @nishkarsh/api # browse the DB
 npm run demo:pilot                # rebuild the demo pilot (after db:seed, with the API running)
 ```

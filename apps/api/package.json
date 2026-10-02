@@ -1,5 +1,5 @@
 {
-  "name": "@pragati/api",
+  "name": "@nishkarsh/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "seed": "tsx --env-file=.env prisma/seed.ts"
   },
   "dependencies": {
-    "@pragati/shared": "*",
+    "@nishkarsh/shared": "*",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

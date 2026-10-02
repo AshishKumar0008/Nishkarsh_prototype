@@ -1,4 +1,4 @@
-import { APPLICATION_STAGE, STAGES, type ApplicationState } from '@pragati/shared';
+import { APPLICATION_STAGE, STAGES, type ApplicationState } from '@nishkarsh/shared';
 
 const STOPPED: ApplicationState[] = ['INELIGIBLE', 'REJECTED', 'TERMINATED'];
 

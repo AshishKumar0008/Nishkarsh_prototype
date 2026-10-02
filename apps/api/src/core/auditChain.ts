@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { ActorRole, EntityType } from '@pragati/shared';
+import type { ActorRole, EntityType } from '@nishkarsh/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import type { Tx } from './prisma';
 

@@ -1,4 +1,4 @@
-import type { Role } from '@pragati/shared';
+import type { Role } from '@nishkarsh/shared';
 import type { ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Layout from './components/Layout';

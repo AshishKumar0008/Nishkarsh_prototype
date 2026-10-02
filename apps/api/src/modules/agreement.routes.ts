@@ -13,7 +13,7 @@ import {
   suggestMilestones,
   validateMilestonePlan,
   type AgreementDraftInput,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { appendAudit } from '../core/auditChain';

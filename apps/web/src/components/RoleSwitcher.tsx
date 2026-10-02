@@ -1,4 +1,4 @@
-import { ROLE_LABELS } from '@pragati/shared';
+import { ROLE_LABELS } from '@nishkarsh/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { api } from '../lib/api';

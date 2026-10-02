@@ -6,7 +6,7 @@
  * the same problem type (→ clustering hint). KrishiSense passes eligibility; AgroLegacy (incorporated
  * 2014) fails the 10-year test — so both memo outcomes can be demoed.
  */
-import { getProblemTag } from '@pragati/shared';
+import { getProblemTag } from '@nishkarsh/shared';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { appendAudit } from '../src/core/auditChain';

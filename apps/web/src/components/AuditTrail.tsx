@@ -1,4 +1,4 @@
-import { ROLE_LABELS, type ActorRole } from '@pragati/shared';
+import { ROLE_LABELS, type ActorRole } from '@nishkarsh/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { formatDateTime, humanize } from '../lib/format';

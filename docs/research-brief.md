@@ -96,7 +96,7 @@ flowchart TD
 
 ## 5. The Winning Innovation Thesis
 
-**Innovation name:** PraGaTi Setu (Procurement Grade Testing Setu) — a "pilot-grade" evidence-and-contracting layer for Maharashtra's startup procurement pathway. (Working name; "Setu" = bridge, deliberately unglamorous rather than another "AI platform.")
+**Innovation name:** Nishkarsh — a "pilot-grade" evidence-and-contracting layer for Maharashtra's startup procurement pathway. (Deliberately unglamorous rather than another "AI platform.")
 
 **One-line definition.** A standing, year-round workflow and evidence system that turns a department's operational pain point into an outcome-based challenge, runs a milestone-paid, data/IP-clear pilot with a pre-agreed independent evaluation protocol, and hands the finance wing an audit-ready evidence packet to invoke GFR 173(i) for a scaled purchase order.
 
@@ -114,7 +114,7 @@ flowchart TD
 
 ### Before vs After
 
-|  | Before (today) | After (with PraGaTi Setu) |
+|  | Before (today) | After (with Nishkarsh) |
 | --- | --- | --- |
 | Problem authoring | Verbal, undocumented, rarely outcome-based | Standard template, timestamped, published as a challenge |
 | Startup discovery | Manual, centred on one annual event | Always-on challenge registry, statewide, district-inclusive |

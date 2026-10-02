@@ -1,4 +1,4 @@
-import { APPLICATION_STAGE } from '@pragati/shared';
+import { APPLICATION_STAGE } from '@nishkarsh/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';

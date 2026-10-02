@@ -1,4 +1,4 @@
-import { AI_DRAFT_FIELDS, getProblemTag, type AiDraftField } from '@pragati/shared';
+import { AI_DRAFT_FIELDS, getProblemTag, type AiDraftField } from '@nishkarsh/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api';

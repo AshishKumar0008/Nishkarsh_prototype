@@ -1,4 +1,4 @@
-import { ROLE_LABELS, type Role } from '@pragati/shared';
+import { ROLE_LABELS, type Role } from '@nishkarsh/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';

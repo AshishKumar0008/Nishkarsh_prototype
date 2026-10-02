@@ -1,4 +1,4 @@
-import { demoLoginSchema, loginSchema } from '@pragati/shared';
+import { demoLoginSchema, loginSchema } from '@nishkarsh/shared';
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
 import { HttpError } from '../core/errors';

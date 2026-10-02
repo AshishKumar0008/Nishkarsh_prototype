@@ -1,4 +1,4 @@
-import { findTransition, type ActorRole, type EntityType } from '@pragati/shared';
+import { findTransition, type ActorRole, type EntityType } from '@nishkarsh/shared';
 import type { ApplicationState, ChallengeState } from '@prisma/client';
 import { appendAudit } from './auditChain';
 import { HttpError, notFound } from './errors';

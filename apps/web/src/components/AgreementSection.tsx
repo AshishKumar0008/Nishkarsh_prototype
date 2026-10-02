@@ -8,7 +8,7 @@ import {
   type ApplicationState,
   type DataSensitivity,
   type MilestonePlanItem,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api';

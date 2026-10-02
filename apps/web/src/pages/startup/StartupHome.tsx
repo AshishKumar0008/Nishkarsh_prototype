@@ -1,4 +1,4 @@
-import { getProblemTag } from '@pragati/shared';
+import { getProblemTag } from '@nishkarsh/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import StateBadge from '../../components/StateBadge';

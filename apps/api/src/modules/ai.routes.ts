@@ -1,4 +1,4 @@
-import { AI_PROMPT_VERSION, aiDraftRequestSchema, findUnsupportedNumbers, redactPersonalData } from '@pragati/shared';
+import { AI_PROMPT_VERSION, aiDraftRequestSchema, findUnsupportedNumbers, redactPersonalData } from '@nishkarsh/shared';
 import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { canonicalJson } from '../core/auditChain';

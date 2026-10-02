@@ -3,7 +3,7 @@ import {
   RUBRIC_CRITERIA,
   SELECTION_THRESHOLD,
   type ApplicationState,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api';

@@ -1,4 +1,4 @@
-import { createChallengeSchema, PROBLEM_TAGS, type AiDraftField } from '@pragati/shared';
+import { createChallengeSchema, PROBLEM_TAGS, type AiDraftField } from '@nishkarsh/shared';
 import { useMutation } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';

@@ -1,4 +1,4 @@
-import { aiChallengeDraftSchema, applySchema, createChallengeSchema, getProblemTag, reviewDraftAgainstFinal } from '@pragati/shared';
+import { aiChallengeDraftSchema, applySchema, createChallengeSchema, getProblemTag, reviewDraftAgainstFinal } from '@nishkarsh/shared';
 import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';

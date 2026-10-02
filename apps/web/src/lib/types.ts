@@ -7,7 +7,7 @@ import type {
   EligibilityCheck,
   MilestonePlanItem,
   Role,
-} from '@pragati/shared';
+} from '@nishkarsh/shared';
 
 export interface SessionUser {
   id: string;

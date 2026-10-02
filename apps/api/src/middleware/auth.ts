@@ -1,4 +1,4 @@
-import type { Role } from '@pragati/shared';
+import type { Role } from '@nishkarsh/shared';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { forbidden, HttpError } from '../core/errors';

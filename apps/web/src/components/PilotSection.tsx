@@ -1,4 +1,4 @@
-import type { ApplicationState, CommitmentStanding } from '@pragati/shared';
+import type { ApplicationState, CommitmentStanding } from '@nishkarsh/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api';

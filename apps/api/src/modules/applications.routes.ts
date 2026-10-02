@@ -1,4 +1,4 @@
-import { eligibilityDecisionSchema } from '@pragati/shared';
+import { eligibilityDecisionSchema } from '@nishkarsh/shared';
 import type { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';

@@ -1,4 +1,4 @@
-import { getProblemTag } from '@pragati/shared';
+import { getProblemTag } from '@nishkarsh/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import AuditTrail from '../components/AuditTrail';
