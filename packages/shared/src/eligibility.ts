@@ -9,11 +9,13 @@
  * each eligibility memo records the version it was produced under.
  */
 
-export const RULES_VERSION = '2026.09-draft.1';
+export const RULES_VERSION = '2026.10-draft.2';
 
-/** DPIIT startup definition thresholds (G.S.R. 127(E), 2019 — verify current notification). */
+/** DPIIT startup definition thresholds (G.S.R. 108(E), 2026). Deep-tech startups get longer limits. */
 export const DPIIT_MAX_AGE_YEARS = 10;
-export const DPIIT_MAX_TURNOVER_INR = 100 * 1_00_00_000; // ₹100 crore
+export const DPIIT_MAX_TURNOVER_INR = 200 * 1_00_00_000; // ₹200 crore
+export const DPIIT_DEEP_TECH_MAX_AGE_YEARS = 20;
+export const DPIIT_DEEP_TECH_MAX_TURNOVER_INR = 300 * 1_00_00_000; // ₹300 crore
 
 export const GFR_CLAUSES = {
   GFR_173_i: {
@@ -37,6 +39,8 @@ export interface EligibilityInput {
   turnoverLatestFyInr: number;
   startupSectors: string[];
   challengeSector: string;
+  /** DPIIT-recognised as a deep-tech startup (20-year / ₹300 crore limits). */
+  deepTech?: boolean;
   /** Evaluation date; defaults to now. Pass explicitly in tests. */
   asOf?: Date;
 }
@@ -70,7 +74,9 @@ function addYears(d: Date, years: number) {
 export function evaluateEligibility(input: EligibilityInput): EligibilityResult {
   const asOf = input.asOf ?? new Date();
   const incorporated = new Date(input.incorporationDate);
-  const ageLimit = addYears(incorporated, DPIIT_MAX_AGE_YEARS);
+  const maxAgeYears = input.deepTech ? DPIIT_DEEP_TECH_MAX_AGE_YEARS : DPIIT_MAX_AGE_YEARS;
+  const maxTurnoverInr = input.deepTech ? DPIIT_DEEP_TECH_MAX_TURNOVER_INR : DPIIT_MAX_TURNOVER_INR;
+  const ageLimit = addYears(incorporated, maxAgeYears);
   const ageYears = (asOf.getTime() - incorporated.getTime()) / (365.25 * 24 * 3600 * 1000);
 
   const checks: EligibilityCheck[] = [
@@ -87,15 +93,15 @@ export function evaluateEligibility(input: EligibilityInput): EligibilityResult 
     },
     {
       code: 'INCORPORATION_AGE',
-      label: `Incorporated within last ${DPIIT_MAX_AGE_YEARS} years`,
+      label: `Incorporated within last ${maxAgeYears} years`,
       passed: asOf < ageLimit,
       detail: `Incorporated ${incorporated.toISOString().slice(0, 10)} (${ageYears.toFixed(1)} years ago).`,
       blocking: true,
     },
     {
       code: 'TURNOVER_CEILING',
-      label: `Turnover not above ${formatCrore(DPIIT_MAX_TURNOVER_INR)}`,
-      passed: input.turnoverLatestFyInr <= DPIIT_MAX_TURNOVER_INR,
+      label: `Turnover not above ${formatCrore(maxTurnoverInr)}`,
+      passed: input.turnoverLatestFyInr <= maxTurnoverInr,
       detail: `Self-declared latest-FY turnover: ${formatCrore(input.turnoverLatestFyInr)}.`,
       blocking: true,
     },

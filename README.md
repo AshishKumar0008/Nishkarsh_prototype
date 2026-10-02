@@ -30,6 +30,16 @@ npm run dev                                   # api :4000, web :5173
 Open http://localhost:5173 and use the **Demo: sign in as…** panel (all passwords `demo1234`).
 Reset everything with `npm run db:reset`.
 
+**Jump straight to a running pilot** (for demos and recordings): with `npm run dev` running,
+
+```bash
+npm run db:seed && npm run demo:pilot
+```
+
+This drives the real API to build the full story — KrishiSense found eligible, panel scores 7.60 with one evaluator
+recused, agreement signed by both sides, milestone 1 complete with its tranche released, milestone 2 awaiting sign-off —
+and prints the application link. AgroLegacy is screened out as not eligible.
+
 ## Try the stage 1 → 6 flow
 
 1. **Department Officer** (Anjali, Latur) → *New challenge* → fill the template → *Sign & publish*.
@@ -119,4 +129,5 @@ assistant runs in **offline keyword-rules mode** and says so in the UI, so the d
 npm test                          # unit tests (eligibility, evaluation, agreement rules, audit hashing)
 npm run typecheck                 # all workspaces
 npm run db:studio -w @pragati/api # browse the DB
+npm run demo:pilot                # rebuild the demo pilot (after db:seed, with the API running)
 ```

@@ -2,7 +2,7 @@
   "name": "nishkarsh",
   "version": "0.1.0",
   "private": true,
-  "description": "Nishkarsh — pilot-to-procurement evidence and contracting layer (PS 26136)",
+  "description": "Nishkarsh \u2014 pilot-to-procurement evidence and contracting layer (PS 26136)",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -12,6 +12,7 @@
     "db:migrate": "npm run db:migrate -w @pragati/api",
     "db:seed": "npm run db:seed -w @pragati/api",
     "db:reset": "npm run db:reset -w @pragati/api",
+    "demo:pilot": "node scripts/demo-pilot.mjs",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
