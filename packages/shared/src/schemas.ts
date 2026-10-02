@@ -35,7 +35,8 @@ export const createChallengeSchema = z
     budgetCeilingInr: z.coerce.number().int().positive(),
     pilotDurationWeeks: z.coerce.number().int().min(1).max(52),
     applicationDeadline: z.coerce.date(),
-    aiAssisted: z.boolean().default(false),
+    /** Set when the officer used the AI drafting assistant. The server derives `aiAssisted` from it — never the client. */
+    aiDraftId: z.string().min(1).optional(),
   })
   .refine((c) => c.targetValue !== c.baselineValue, {
     message: 'Target must differ from baseline — a challenge needs a measurable outcome',

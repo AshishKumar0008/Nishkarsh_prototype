@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { ZodError } from 'zod';
 import { HttpError } from './core/errors';
+import { aiRouter } from './modules/ai.routes';
 import { agreementRouter } from './modules/agreement.routes';
 import { applicationsRouter } from './modules/applications.routes';
 import { auditRouter } from './modules/audit.routes';
@@ -19,6 +20,7 @@ export function createApp() {
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
   app.use('/api/auth', authRouter);
   app.use('/api/meta', metaRouter);
+  app.use('/api/ai', aiRouter);
   app.use('/api/challenges', challengesRouter);
   app.use('/api/applications', applicationsRouter);
   app.use('/api/applications', evaluationRouter);

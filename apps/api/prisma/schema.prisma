@@ -113,6 +113,7 @@ model User {
   createdAt    DateTime    @default(now())
 
   challengesAuthored      Challenge[]        @relation("ChallengeAuthor")
+  aiDrafts                AiDraft[]
   applicationsSubmitted   Application[]      @relation("ApplicationSubmitter")
   eligibilityDecisions    EligibilityMemo[]  @relation("EligibilityDecider")
   scorecards              Scorecard[]
@@ -147,7 +148,8 @@ model Challenge {
   budgetCeilingInr    Int
   pilotDurationWeeks  Int
   applicationDeadline DateTime
-  aiAssisted          Boolean        @default(false)
+  aiAssisted          Boolean        @default(false) // derived server-side from aiDraft — never client-set
+  aiDraft             AiDraft?
   state               ChallengeState @default(DRAFT)
   publishedAt         DateTime?
   departmentId        String
@@ -159,6 +161,31 @@ model Challenge {
   updatedAt           DateTime       @updatedAt
 
   @@index([problemTag, state])
+}
+
+/// Stage 1 AI drafting assistant — provenance for every suggestion shown to an officer.
+/// Suggestions only: the officer edits, saves and signs. Used at most once (challengeId is set on use).
+model AiDraft {
+  id            String     @id @default(cuid())
+  purpose       String     @default("CHALLENGE_DRAFT")
+  requestedById String
+  requestedBy   User       @relation(fields: [requestedById], references: [id])
+  departmentId  String
+  notesRedacted String // what was actually sent to the model, after PII redaction
+  redactions    Json // { PHONE: 1, AADHAAR: 0, ... }
+  provider      String // 'anthropic' | 'offline-rules'
+  model         String
+  promptVersion String
+  output        Json // validated AiChallengeDraft
+  outputHash    String // sha256 of canonical output — copied into the audit chain on use
+  warnings      Json // numbers in the draft that were not in the notes
+  latencyMs     Int
+  fieldReview   Json? // per field ACCEPTED / CHANGED, filled when the officer saves the challenge
+  challengeId   String?    @unique
+  challenge     Challenge? @relation(fields: [challengeId], references: [id])
+  createdAt     DateTime   @default(now())
+
+  @@index([requestedById, createdAt])
 }
 
 // ─── Stage 2: Application ───────────────────────────────────────────────────
