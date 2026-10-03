@@ -8,15 +8,16 @@
  */
 import { getProblemTag } from '@nishkarsh/shared';
 import { PrismaClient } from '@prisma/client';
+import { pathToFileURL } from 'node:url';
 import bcrypt from 'bcryptjs';
 import { appendAudit } from '../src/core/auditChain';
 
-const prisma = new PrismaClient();
 const PASSWORD = 'demo1234';
 
 const inWeeks = (w: number) => new Date(Date.now() + w * 7 * 24 * 3600 * 1000);
 
-async function main() {
+/** Wipes every table and loads the fictional demo data. Used by `npm run db:seed` and by first-boot seeding on a fresh deployment. */
+export async function seedDemoData(prisma: PrismaClient) {
   // Wipe in dependency order (dev only — the audit log is otherwise never deleted)
   await prisma.$transaction([
     prisma.auditLog.deleteMany(),
@@ -168,9 +169,13 @@ async function main() {
   console.log(`Seeded ${users.length} users (password: ${PASSWORD}), 2 departments, 2 startups, ${challenges.length} published challenges.`);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Run directly (`npm run db:seed`) — but not when imported by the server for first-boot seeding
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const prisma = new PrismaClient();
+  seedDemoData(prisma)
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

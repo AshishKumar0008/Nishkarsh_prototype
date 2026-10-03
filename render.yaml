@@ -1,0 +1,39 @@
+# Render blueprint: one web service (API + built web app on a single URL) and one Postgres database.
+# Demo deployment with FICTIONAL data only — see docs/deploy.md before using it for anything else.
+databases:
+  - name: nishkarsh-db
+    databaseName: nishkarsh
+    plan: free              # free Postgres expires 30 days after creation; see docs/deploy.md
+    region: singapore       # nearest Render region to India; the data is fictional, so residency is not at stake
+    ipAllowList: []         # no external access; only the web service can connect
+
+services:
+  - type: web
+    name: nishkarsh
+    runtime: node
+    plan: free              # sleeps after 15 minutes idle; the first request afterwards takes about a minute
+    region: singapore       # must match the database region (internal connection)
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start # applies migrations, then starts the API, which also serves the web app
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nishkarsh-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # One-click role switching for the live demo. Passwordless — fictional data only.
+      - key: DEMO_MODE
+        value: "true"
+      - key: ALLOW_PUBLIC_DEMO
+        value: "true"
+      # First boot on an empty database: load the demo data and replay the demo storyline
+      - key: AUTO_SEED
+        value: "true"
+      - key: AUTO_DEMO_PILOT
+        value: "true"

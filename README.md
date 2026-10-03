@@ -69,6 +69,11 @@ and prints the application link. AgroLegacy is screened out as not eligible.
    UPDATE "AuditLog" SET payload = '{"hacked":true}' WHERE seq = 3;
    ```
 
+## Deploy a public demo
+
+`render.yaml` + [docs/deploy.md](docs/deploy.md) put the prototype on a single URL (API and web app together) with
+fictional demo data. It is a demo, not a production deployment: do not load real data.
+
 ## Architecture rules (read before writing code)
 
 1. **Every state change goes through `transition()`** in [apps/api/src/core/stateMachine.ts](apps/api/src/core/stateMachine.ts).
