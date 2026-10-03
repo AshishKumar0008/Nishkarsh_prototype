@@ -213,8 +213,13 @@ agreementRouter.put('/:id/agreement', requireRole('FINANCE'), async (req, res) =
       agreementId = (await tx.pilotAgreement.create({ data: { ...data, applicationId: id } })).id;
     }
 
+    const validItems = input.milestones.map((item) => ({
+      ...item,
+      paymentTrancheInr: item.paymentTrancheInr ?? 0, // default to 0 if undefined
+    }));
+
     await tx.milestone.createMany({
-      data: input.milestones.map((m, i) => ({
+      data: validItems.map((m, i) => ({
         agreementId,
         sequence: i + 1,
         title: m.title,
@@ -245,7 +250,7 @@ agreementRouter.put('/:id/agreement', requireRole('FINANCE'), async (req, res) =
         templateVersion: doc.templateVersion,
         dataSensitivity: input.dataSensitivity,
         totalValueInr: doc.totalValueInr,
-        milestones: input.milestones.map((m) => ({ title: m.title, dueWeek: m.dueWeek, paymentTrancheInr: m.paymentTrancheInr })),
+        milestones: validItems.map((m) => ({ title: m.title, dueWeek: m.dueWeek, paymentTrancheInr: m.paymentTrancheInr })),
         ...(existing?.startupSignedAt && { voidedStartupSignature: true }),
       },
     });
