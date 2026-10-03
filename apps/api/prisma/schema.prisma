@@ -2,7 +2,9 @@
 // Stages 1–3 are wired end to end; models for 4–9 are in place so their API work can start in parallel.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "rhel-openssl-3.0.x" is the engine for Vercel / AWS Lambda (Amazon Linux); "native" is the machine running generate
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

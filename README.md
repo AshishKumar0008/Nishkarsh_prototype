@@ -71,8 +71,9 @@ and prints the application link. AgroLegacy is screened out as not eligible.
 
 ## Deploy a public demo
 
-`render.yaml` + [docs/deploy.md](docs/deploy.md) put the prototype on a single URL (API and web app together) with
-fictional demo data. It is a demo, not a production deployment: do not load real data.
+Two ways to put the prototype on a single URL (API and web app together) with fictional demo data:
+[Vercel + Neon](docs/deploy-vercel.md) (`vercel.json`) or [Render](docs/deploy.md) (`render.yaml`).
+It is a demo, not a production deployment: do not load real data.
 
 ## Architecture rules (read before writing code)
 

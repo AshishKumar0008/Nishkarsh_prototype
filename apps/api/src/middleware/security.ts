@@ -4,7 +4,7 @@ import type { NextFunction, Request, Response } from 'express';
  * Standard defensive response headers. The CSP is strict because the app is a same-origin SPA with no third-party
  * scripts, fonts or images; inline styles are allowed only because React renders style attributes.
  */
-const CSP = [
+export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
